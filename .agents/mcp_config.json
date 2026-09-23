@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "graphify": {
+      "command": "graphify-mcp",
+      "args": ["E:/03 Study/StayHive/graphify-out/graph.json"]
+    }
+  }
+}

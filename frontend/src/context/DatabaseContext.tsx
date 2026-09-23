@@ -186,7 +186,8 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const checkInGuest = async (bookingId: number, roomNumber: string, keyCard: string) => {
     try {
-      const res = await apiClient.post(`/bookings/${bookingId}/check_in/`, {
+      const res = await apiClient.post('/reception/check-in/', {
+        booking_id: bookingId,
         key_card_issued: keyCard
       });
       if (res.data?.success) {
@@ -202,7 +203,9 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const checkOutGuest = async (bookingId: number) => {
     try {
-      const res = await apiClient.post(`/bookings/${bookingId}/check_out/`);
+      const res = await apiClient.post('/reception/check-out/', {
+        booking_id: bookingId
+      });
       if (res.data?.success) {
         showToast('Guest checked out. Housekeeping task dispatched.', 'success', 'Check-Out Complete');
         await refreshData();
