@@ -43,6 +43,18 @@ export const AdminDashboard: React.FC = () => {
     { source: 'Walk-ins', percentage: 8, color: '#F59E0B' },
   ];
 
+  const liveHotelsCount = hotels.length || analytics?.total_hotels || 4;
+  const liveTotalRooms = rooms.length || analytics?.total_rooms || 12;
+  const liveAvailableRooms = rooms.length > 0
+    ? rooms.filter(r => r.status === 'Available').length
+    : (analytics?.available_rooms ?? 7);
+  const liveOccupiedRooms = rooms.length > 0
+    ? rooms.filter(r => r.status === 'Occupied').length
+    : (analytics?.occupied_rooms ?? 3);
+  const liveOccupancyRate = liveTotalRooms > 0
+    ? Math.round((liveOccupiedRooms / liveTotalRooms) * 100)
+    : (analytics?.occupancy_rate || 25);
+
   return (
     <div className="space-y-8">
       {/* Top Welcome Banner */}
@@ -58,6 +70,7 @@ export const AdminDashboard: React.FC = () => {
             Here's what's happening across StayHive luxury properties today.
           </p>
         </div>
+
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={() => navigate('/bookings')}>
             View All Bookings
@@ -72,7 +85,7 @@ export const AdminDashboard: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           title="Total Hotels"
-          value={analytics?.total_hotels || hotels.length || 4}
+          value={liveHotelsCount}
           change="+1 New"
           isPositive={true}
           icon={Hotel}
@@ -80,7 +93,7 @@ export const AdminDashboard: React.FC = () => {
         />
         <StatCard
           title="Available Rooms"
-          value={analytics?.available_rooms ?? 5}
+          value={liveAvailableRooms}
           change="Ready to Sell"
           isPositive={true}
           icon={BedDouble}
@@ -88,8 +101,8 @@ export const AdminDashboard: React.FC = () => {
         />
         <StatCard
           title="Occupied Rooms"
-          value={analytics?.occupied_rooms ?? 4}
-          change={`${analytics?.occupancy_rate || 68}% Rate`}
+          value={liveOccupiedRooms}
+          change={`${liveOccupancyRate}% Rate`}
           isPositive={true}
           icon={Users}
           iconColor="bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
