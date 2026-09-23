@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import {
   BedDouble, User, Tag, CreditCard, CheckCircle2, ArrowRight,
   ArrowLeft, Calendar, ShieldCheck, QrCode, Sparkles, Building,
-  Star, MapPin, Users, Check, ChevronRight, Download, Eye
+  Star, MapPin, Users, Check, ChevronRight, Download, Eye, Loader2
 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -15,26 +15,67 @@ import { DatePicker } from '../ui/DatePicker';
 import { StatusBadge } from '../ui/StatusBadge';
 import { Stepper, StepItem } from '../ui/Stepper';
 import { useDatabase } from '../../context/DatabaseContext';
+import { useAuth } from '../../context/AuthContext';
+import { useAvailability, useCreateBooking, useValidateOffer } from '../../hooks/useBookings';
 
 export const BookingWizard: React.FC = () => {
   const navigate = useNavigate();
-  const { hotels, rooms, roomTypes, offers, createBooking } = useDatabase();
+  const { user } = useAuth();
+  const { hotels, rooms } = useDatabase();
+  const createBookingMutation = useCreateBooking();
+  const validateOfferMutation = useValidateOffer();
+
+  // Stay dates default: tomorrow to 3 days later
+  const getDefaultDates = () => {
+    const today = new Date();
+    const d1 = new Date(today);
+    d1.setDate(today.getDate() + 1);
+    const d2 = new Date(today);
+    d2.setDate(today.getDate() + 4);
+    return {
+      in: d1.toISOString().split('T')[0],
+      out: d2.toISOString().split('T')[0]
+    };
+  };
+
+  const defaultDates = getDefaultDates();
 
   const [step, setStep] = useState<number>(1);
   const [selectedHotelId, setSelectedHotelId] = useState<number>(1);
   const [selectedRoomId, setSelectedRoomId] = useState<number>(2);
-  const [checkInDate, setCheckInDate] = useState('2026-10-10');
-  const [checkOutDate, setCheckOutDate] = useState('2026-10-13');
+  const [checkInDate, setCheckInDate] = useState(defaultDates.in);
+  const [checkOutDate, setCheckOutDate] = useState(defaultDates.out);
   const [guests, setGuests] = useState(2);
   const [specialPreferences, setSpecialPreferences] = useState<string[]>(['High Floor Room']);
 
-  // Guest details
-  const [guestName, setGuestName] = useState('Rahul Sharma');
-  const [guestEmail, setGuestEmail] = useState('rahul.sharma@gmail.com');
-  const [guestPhone, setGuestPhone] = useState('+91 98220 11223');
+  // Real-time Availability Query
+  const { data: availabilityData, isLoading: isCheckingAvailability } = useAvailability({
+    hotel_id: selectedHotelId,
+    check_in_date: checkInDate,
+    check_out_date: checkOutDate,
+    guests,
+  });
+
+  // Guest details (autofilled from authenticated user if available)
+  const [guestName, setGuestName] = useState(
+    user ? `${user.first_name} ${user.last_name}`.trim() : 'Rahul Sharma'
+  );
+  const [guestEmail, setGuestEmail] = useState(user?.email || 'rahul.sharma@gmail.com');
+  const [guestPhone, setGuestPhone] = useState(user?.phone || '+91 98220 11223');
   const [idProofType, setIdProofType] = useState('Aadhaar Card');
   const [idProofNumber, setIdProofNumber] = useState('9845 2314 7890');
   const [specialNotes, setSpecialNotes] = useState('Anniversary trip, requested quiet room with sea/garden view.');
+
+  // Update guest details if user loads in later
+  useEffect(() => {
+    if (user) {
+      if (user.first_name || user.last_name) {
+        setGuestName(`${user.first_name} ${user.last_name}`.trim());
+      }
+      if (user.email) setGuestEmail(user.email);
+      if (user.phone) setGuestPhone(user.phone);
+    }
+  }, [user]);
 
   // Promo code
   const [couponCode, setCouponCode] = useState('SUMMER15');
@@ -47,8 +88,8 @@ export const BookingWizard: React.FC = () => {
   const [cardNumber, setCardNumber] = useState('4532 •••• •••• 8910');
   const [cardExpiry, setCardExpiry] = useState('08/29');
   const [cardCvv, setCardCvv] = useState('•••');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
+  const isSubmitting = createBookingMutation.isPending;
 
   // Derivations
   const selectedHotel = hotels.find((h) => h.id === selectedHotelId) || hotels[0] || {
@@ -59,14 +100,25 @@ export const BookingWizard: React.FC = () => {
     star_rating: 4.9,
   };
 
-  const availableRooms = rooms.filter((r) => r.status === 'Available');
-  const selectedRoom = rooms.find((r) => r.id === selectedRoomId) || availableRooms[0] || {
+  // Use real available rooms if returned from availability API, otherwise fallback to DB available rooms
+  const availableRooms = (availabilityData?.available_rooms && availabilityData.available_rooms.length > 0)
+    ? availabilityData.available_rooms
+    : rooms.filter((r) => r.hotel_id === selectedHotelId && r.status !== 'Maintenance');
+
+  const selectedRoom = availableRooms.find((r) => r.id === selectedRoomId) || availableRooms[0] || rooms[0] || {
     id: 2,
     room_number: '102',
     price_per_night: 4500,
     room_type_name: 'Deluxe Suite',
     capacity: 2,
   };
+
+  // Keep selectedRoomId in sync if current selection is not available
+  useEffect(() => {
+    if (availableRooms.length > 0 && !availableRooms.some((r) => r.id === selectedRoomId)) {
+      setSelectedRoomId(availableRooms[0].id);
+    }
+  }, [availableRooms, selectedRoomId]);
 
   // Calculate nights
   const calcNights = () => {
@@ -102,10 +154,10 @@ export const BookingWizard: React.FC = () => {
     icon: <Building className="w-4 h-4 text-indigo-600" />,
   }));
 
-  const roomOptions = (availableRooms.length > 0 ? availableRooms : rooms).map((r) => ({
+  const roomOptions = availableRooms.map((r) => ({
     value: r.id,
     label: `Room ${r.room_number} — ${r.room_type_name || 'Luxury Suite'}`,
-    sublabel: `₹${Number(r.price_per_night).toLocaleString('en-IN')}/night • Up to 2 Guests`,
+    sublabel: `₹${Number(r.price_per_night).toLocaleString('en-IN')}/night • Up to ${r.capacity || 2} Guests`,
     icon: <BedDouble className="w-4 h-4 text-indigo-600" />,
   }));
 
@@ -116,30 +168,46 @@ export const BookingWizard: React.FC = () => {
     { value: 'Voter ID', label: 'Voter ID Card' },
   ];
 
-  const handleApplyCoupon = () => {
-    if (couponCode.toUpperCase() === 'SUMMER15') {
-      setAppliedDiscountPercent(15);
-      setCouponApplied(true);
-    } else if (couponCode.toUpperCase() === 'ROYALSTAY') {
-      setAppliedDiscountPercent(25);
-      setCouponApplied(true);
-    } else {
-      setAppliedDiscountPercent(10);
-      setCouponApplied(true);
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    try {
+      const res = await validateOfferMutation.mutateAsync({
+        code: couponCode.trim(),
+        amount: subtotal
+      });
+      if (res?.discount_percentage) {
+        setAppliedDiscountPercent(Number(res.discount_percentage));
+        setCouponApplied(true);
+      }
+    } catch {
+      // Local fallback for demo coupons
+      if (couponCode.toUpperCase() === 'SUMMER15') {
+        setAppliedDiscountPercent(15);
+        setCouponApplied(true);
+      } else if (couponCode.toUpperCase() === 'ROYALSTAY') {
+        setAppliedDiscountPercent(25);
+        setCouponApplied(true);
+      } else {
+        setCouponApplied(false);
+      }
     }
   };
 
   const handleFinishBooking = async () => {
-    setIsSubmitting(true);
     try {
-      const res = await createBooking({
-        customer_id: 1,
+      const res = await createBookingMutation.mutateAsync({
         hotel_id: selectedHotelId,
-        room_id: selectedRoomId,
+        room_id: selectedRoom?.id || selectedRoomId,
         check_in_date: checkInDate,
         check_out_date: checkOutDate,
         total_guests: guests,
         offer_code: couponApplied ? couponCode : undefined,
+        guest_name: guestName,
+        guest_email: guestEmail,
+        guest_phone: guestPhone,
+        id_proof_type: idProofType,
+        id_proof_number: idProofNumber,
+        special_notes: specialNotes,
       });
 
       setConfirmedBooking(
@@ -160,8 +228,6 @@ export const BookingWizard: React.FC = () => {
       setStep(4);
     } catch (e) {
       console.error('Booking submission error:', e);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -290,8 +356,21 @@ export const BookingWizard: React.FC = () => {
                       value={selectedRoomId}
                       onChange={(v) => setSelectedRoomId(Number(v))}
                       options={roomOptions}
-                      placeholder="Select available suite"
+                      placeholder={isCheckingAvailability ? "Checking availability..." : "Select available suite"}
                     />
+                    {isCheckingAvailability ? (
+                      <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-1.5 pt-1">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" /> Verifying real-time suite availability...
+                      </p>
+                    ) : availableRooms.length > 0 ? (
+                      <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5 pt-1">
+                        <Check className="w-3.5 h-3.5" /> {availableRooms.length} suite{availableRooms.length > 1 ? 's' : ''} available for these stay dates
+                      </p>
+                    ) : (
+                      <p className="text-xs text-rose-600 dark:text-rose-400 font-medium pt-1">
+                        No suites available for the selected dates. Please adjust your stay dates.
+                      </p>
+                    )}
 
                     {/* Quick Room Features */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">

@@ -2,19 +2,65 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Calendar, BedDouble, User, CreditCard, Sparkles, Utensils,
-  ArrowLeft, CheckCircle2, Clock, ShieldCheck, FileText, Ban
+  ArrowLeft, CheckCircle2, Clock, ShieldCheck, FileText, Ban, Loader2, ShieldAlert
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { useDatabase } from '../context/DatabaseContext';
+import { useBooking, useCancelBooking } from '../hooks/useBookings';
 
 export const BookingDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { bookings, checkInGuest, checkOutGuest } = useDatabase();
+  const { bookings: contextBookings, checkInGuest, checkOutGuest } = useDatabase();
+  const { data: remoteBooking, isLoading, error } = useBooking(id);
+  const cancelBookingMutation = useCancelBooking();
 
-  const booking = bookings.find(b => String(b.id) === id) || bookings[0];
+  const booking = remoteBooking || contextBookings.find(b => String(b.id) === id);
+
+  const handleCancel = async () => {
+    if (!booking) return;
+    if (window.confirm(`Are you sure you want to cancel booking ${booking.booking_number}?`)) {
+      await cancelBookingMutation.mutateAsync({
+        id: booking.id,
+        reason: 'Guest cancelled reservation'
+      });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-16 text-center space-y-3">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto" />
+        <p className="text-sm text-slate-500">Loading reservation details from StayHive database...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    const isForbidden = (error as any)?.response?.status === 403;
+    return (
+      <div className="max-w-md mx-auto my-12 text-center">
+        <Card className="p-8 space-y-4 border border-rose-200 dark:border-rose-900/40">
+          <div className="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center mx-auto">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            {isForbidden ? 'Access Restricted' : 'Reservation Not Found'}
+          </h2>
+          <p className="text-xs text-slate-500">
+            {isForbidden
+              ? 'You do not have authorization to view this guest folio. Only the reservation holder or staff can view this stay.'
+              : 'The requested reservation reference could not be located in our records.'}
+          </p>
+          <Button variant="primary" onClick={() => navigate('/my-bookings')}>
+            Return to My Reservations
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   if (!booking) {
     return (
@@ -54,13 +100,24 @@ export const BookingDetailsPage: React.FC = () => {
 
         <div className="flex items-center gap-2">
           {booking.status === 'Confirmed' && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => checkInGuest(booking.id, booking.rooms?.[0]?.room_number || '101', `KEY-${booking.rooms?.[0]?.room_number || '101'}-A`)}
-            >
-              Express Check-In
-            </Button>
+            <>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => checkInGuest(booking.id, booking.rooms?.[0]?.room_number || '101', `KEY-${booking.rooms?.[0]?.room_number || '101'}-A`)}
+              >
+                Express Check-In
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                onClick={handleCancel}
+                isLoading={cancelBookingMutation.isPending}
+              >
+                <Ban className="w-4 h-4 mr-1.5" /> Cancel Stay
+              </Button>
+            </>
           )}
           {booking.status === 'Checked-in' && (
             <Button

@@ -214,6 +214,26 @@ export interface Booking {
   service_requests?: any[];
 }
 
+export interface AvailableRoomType {
+  id: number;
+  type_name: string;
+  description?: string;
+  capacity: number;
+  available_count: number;
+  price_per_night: number;
+  total_estimated: number;
+  nights: number;
+}
+
+export interface AvailabilityResponse {
+  check_in_date: string;
+  check_out_date: string;
+  nights: number;
+  total_available_rooms: number;
+  room_types: AvailableRoomType[];
+  available_rooms: Room[];
+}
+
 export interface Restaurant {
   id: number;
   hotel_id: number;
