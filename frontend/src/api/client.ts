@@ -26,7 +26,8 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthEndpoint = originalRequest?.url?.includes('/auth/login/') || originalRequest?.url?.includes('/auth/refresh/');
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
       const refreshToken = localStorage.getItem('stayhive_refresh_token');
       if (refreshToken) {
@@ -42,6 +43,7 @@ apiClient.interceptors.response.use(
           console.warn('Session expired, logging out');
           localStorage.removeItem('stayhive_access_token');
           localStorage.removeItem('stayhive_refresh_token');
+          window.dispatchEvent(new CustomEvent('stayhive:auth_expired'));
         }
       }
     }

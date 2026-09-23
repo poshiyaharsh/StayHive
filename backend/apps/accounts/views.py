@@ -84,28 +84,45 @@ class RegisterView(APIView):
 
 
 class CurrentUserView(APIView):
-    permission_classes = [permissions.AllowAny]  # Let header parse Bearer or demo token
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        auth_header = request.headers.get('Authorization', '')
-        if auth_header.startswith('Bearer '):
-            token = auth_header.split(' ')[1]
+        if not request.user or not request.user.is_authenticated:
+            return api_error("Authentication required", status_code=status.HTTP_401_UNAUTHORIZED)
+        return api_response(success=True, data=UserSerializer(request.user).data)
+
+
+class LogoutView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        refresh_token = request.data.get('refresh')
+        if refresh_token:
             try:
-                from rest_framework_simplejwt.tokens import AccessToken
-                access = AccessToken(token)
-                user_id = access['user_id']
-                user = User.objects.get(id=user_id)
-                return api_response(success=True, data=UserSerializer(user).data)
-            except Exception as e:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except Exception:
                 pass
-        
-        # Fallback to query param or default admin for demo convenience
-        user_id = request.query_params.get('user_id', 1)
+        return api_response(success=True, message="Logged out successfully")
+
+
+class HealthCheckView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
         try:
-            user = User.objects.get(id=user_id)
-            return api_response(success=True, data=UserSerializer(user).data)
-        except User.DoesNotExist:
-            return api_error("User not found", status_code=status.HTTP_404_NOT_FOUND)
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+            db_status = "connected"
+        except Exception:
+            db_status = "disconnected"
+
+        return Response({
+            "success": True,
+            "message": "StayHive API is running",
+            "database": db_status
+        })
 
 
 class RoleListView(APIView):

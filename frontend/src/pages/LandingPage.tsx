@@ -47,8 +47,8 @@ export const LandingPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}>
-            Operations Portal
+          <Button variant="outline" size="sm" onClick={() => navigate('/login')}>
+            Sign In
           </Button>
           <Button variant="primary" size="sm" onClick={() => navigate('/booking/new')}>
             Book Now

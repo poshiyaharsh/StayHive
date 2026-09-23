@@ -43,7 +43,7 @@ def get_tokens_for_user(user):
     """
     Generate JWT access and refresh tokens with user payload.
     """
-    refresh = RefreshToken()
+    refresh = RefreshToken.for_user(user)
     refresh['user_id'] = user.id
     refresh['username'] = user.username
     refresh['email'] = user.email

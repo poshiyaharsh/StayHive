@@ -1,18 +1,24 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User, UserRole } from '../types/database';
 import apiClient from '../api/client';
+
+export interface LoginResult {
+  success: boolean;
+  message?: string;
+  user?: User;
+}
 
 interface AuthContextType {
   user: User | null;
   role: UserRole;
   isAuthenticated: boolean;
-  login: (username: string, password?: string) => Promise<boolean>;
-  logout: () => void;
-  switchRole: (newRole: UserRole) => void;
   isLoading: boolean;
+  login: (username: string, password?: string) => Promise<LoginResult>;
+  logout: () => Promise<void>;
+  switchRole: (newRole: UserRole) => Promise<void>;
 }
 
-const defaultRoleProfiles: Record<UserRole, User> = {
+export const defaultRoleProfiles: Record<UserRole, User> = {
   ADMIN: {
     id: 1,
     username: 'admin',
@@ -87,58 +93,156 @@ const defaultRoleProfiles: Record<UserRole, User> = {
   }
 };
 
+const personaPasswords: Record<UserRole, string> = {
+  ADMIN: 'admin123',
+  MANAGER: 'stayhive123',
+  RECEPTION: 'stayhive123',
+  HOUSEKEEPING: 'stayhive123',
+  RESTAURANT: 'stayhive123',
+  CUSTOMER: 'stayhive123',
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [role, setRole] = useState<UserRole>(() => {
-    const savedRole = localStorage.getItem('stayhive_active_role');
-    return (savedRole as UserRole) || 'ADMIN';
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<UserRole>('CUSTOMER');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const [user, setUser] = useState<User | null>(() => {
-    const savedRole = (localStorage.getItem('stayhive_active_role') as UserRole) || 'ADMIN';
-    return defaultRoleProfiles[savedRole] || defaultRoleProfiles.ADMIN;
-  });
-
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const switchRole = (newRole: UserRole) => {
-    setRole(newRole);
-    localStorage.setItem('stayhive_active_role', newRole);
-    const profile = defaultRoleProfiles[newRole];
-    setUser(profile);
+  const extractRole = (userData: User): UserRole => {
+    if (typeof userData.role === 'string') {
+      return userData.role as UserRole;
+    }
+    if (userData.role?.name) {
+      return userData.role.name as UserRole;
+    }
+    if (userData.role_detail?.name) {
+      return userData.role_detail.name as UserRole;
+    }
+    return 'CUSTOMER';
   };
 
-  const login = async (username: string, password: string = 'stayhive123') => {
+  // Verify stored token on mount
+  useEffect(() => {
+    let isMounted = true;
+
+    const initializeAuth = async () => {
+      const accessToken = localStorage.getItem('stayhive_access_token');
+      if (!accessToken) {
+        if (isMounted) {
+          setUser(null);
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const response = await apiClient.get('/auth/me/');
+        if (isMounted && response.data?.success && response.data?.data) {
+          const userData = response.data.data;
+          const userRole = extractRole(userData);
+          setUser(userData);
+          setRole(userRole);
+          localStorage.setItem('stayhive_active_role', userRole);
+        } else if (isMounted) {
+          setUser(null);
+        }
+      } catch (err) {
+        console.warn('Authentication token invalid or expired:', err);
+        if (isMounted) {
+          localStorage.removeItem('stayhive_access_token');
+          localStorage.removeItem('stayhive_refresh_token');
+          localStorage.removeItem('stayhive_active_role');
+          setUser(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
+
+    const handleAuthExpired = () => {
+      if (isMounted) {
+        setUser(null);
+        localStorage.removeItem('stayhive_access_token');
+        localStorage.removeItem('stayhive_refresh_token');
+        localStorage.removeItem('stayhive_active_role');
+      }
+    };
+
+    window.addEventListener('stayhive:auth_expired', handleAuthExpired);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('stayhive:auth_expired', handleAuthExpired);
+    };
+  }, []);
+
+  const login = async (username: string, password?: string): Promise<LoginResult> => {
     setIsLoading(true);
     try {
-      const response = await apiClient.post('/auth/login/', { username, password });
+      const response = await apiClient.post('/auth/login/', {
+        username,
+        password: password || 'stayhive123',
+      });
+
       if (response.data?.success) {
         const { access, refresh, user: userData, role: userRole } = response.data.data;
         localStorage.setItem('stayhive_access_token', access);
         localStorage.setItem('stayhive_refresh_token', refresh);
         localStorage.setItem('stayhive_active_role', userRole);
         setUser(userData);
-        setRole(userRole);
+        setRole(userRole as UserRole);
         setIsLoading(false);
-        return true;
+        return { success: true, message: 'Logged in successfully', user: userData };
       }
-    } catch (err) {
-      console.warn('Backend login fallback to mock profile:', err);
-      // Fallback matching role
-      const matchedRole = Object.keys(defaultRoleProfiles).find(
-        (r) => defaultRoleProfiles[r as UserRole].username === username
-      ) as UserRole || 'ADMIN';
-      switchRole(matchedRole);
+
+      setIsLoading(false);
+      return { success: false, message: response.data?.message || 'Login failed' };
+    } catch (err: any) {
+      setIsLoading(false);
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.data?.errors?.non_field_errors?.[0] ||
+        'Invalid username or password';
+      return { success: false, message: errorMsg };
     }
-    setIsLoading(false);
-    return true;
   };
 
-  const logout = () => {
-    localStorage.removeItem('stayhive_access_token');
-    localStorage.removeItem('stayhive_refresh_token');
-    switchRole('CUSTOMER');
+  const logout = useCallback(async () => {
+    const refreshToken = localStorage.getItem('stayhive_refresh_token');
+    try {
+      if (refreshToken) {
+        await apiClient.post('/auth/logout/', { refresh: refreshToken });
+      }
+    } catch (err) {
+      console.warn('Logout notification failed:', err);
+    } finally {
+      localStorage.removeItem('stayhive_access_token');
+      localStorage.removeItem('stayhive_refresh_token');
+      localStorage.removeItem('stayhive_active_role');
+      setUser(null);
+      setRole('CUSTOMER');
+    }
+  }, []);
+
+  const switchRole = async (newRole: UserRole) => {
+    // Attempt authenticating as that persona from database
+    const profile = defaultRoleProfiles[newRole];
+    const password = personaPasswords[newRole];
+    if (profile) {
+      try {
+        const res = await login(profile.username, password);
+        if (res.success) return;
+      } catch {
+        // Fallback to local profile
+      }
+      setRole(newRole);
+      localStorage.setItem('stayhive_active_role', newRole);
+      setUser(profile);
+    }
   };
 
   return (
@@ -147,10 +251,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         role,
         isAuthenticated: !!user,
+        isLoading,
         login,
         logout,
         switchRole,
-        isLoading,
       }}
     >
       {children}

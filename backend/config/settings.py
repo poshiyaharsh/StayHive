@@ -78,15 +78,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+AUTH_USER_MODEL = 'core.User'
+
 # MySQL Database Configuration
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DATABASE_NAME', 'stayhive'),
-        'USER': os.getenv('DATABASE_USER', 'root'),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
-        'HOST': os.getenv('DATABASE_HOST', '127.0.0.1'),
-        'PORT': os.getenv('DATABASE_PORT', '3306'),
+        'NAME': os.getenv('DB_NAME') or os.getenv('DATABASE_NAME') or 'stayhive',
+        'USER': os.getenv('DB_USER') or os.getenv('DATABASE_USER') or 'root',
+        'PASSWORD': os.getenv('DB_PASSWORD') if os.getenv('DB_PASSWORD') is not None else os.getenv('DATABASE_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST') or os.getenv('DATABASE_HOST') or '127.0.0.1',
+        'PORT': os.getenv('DB_PORT') or os.getenv('DATABASE_PORT') or '3306',
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -102,7 +104,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
     ),
-    'DEFAULT_PAGINATION_CLASS': None,  # Let endpoints return direct array/dict or custom paginate
+    'DEFAULT_PAGINATION_CLASS': None,
 }
 
 # Simple JWT Settings
@@ -113,10 +115,12 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': False,
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
 }
 
 # CORS Configuration
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",

@@ -16,7 +16,8 @@ export interface User {
   last_name: string;
   phone?: string;
   avatar?: string;
-  role: Role;
+  role: Role | UserRole;
+  role_detail?: Role;
   is_active: boolean;
   created_at: string;
 }

@@ -10,14 +10,15 @@ class RoleSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    role = RoleSerializer(read_only=True)
+    role = serializers.CharField(source='role.name', read_only=True)
+    role_detail = RoleSerializer(source='role', read_only=True)
     role_id = serializers.PrimaryKeyRelatedField(
         queryset=Role.objects.all(), source='role', write_only=True, required=False
     )
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone', 'avatar', 'role', 'role_id', 'is_active', 'created_at']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone', 'avatar', 'role', 'role_detail', 'role_id', 'is_active', 'created_at']
         read_only_fields = ['id', 'created_at']
 
 

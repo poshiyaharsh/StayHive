@@ -5,11 +5,13 @@ import { NotificationProvider } from './context/NotificationContext';
 import { AuthProvider } from './context/AuthContext';
 import { DatabaseProvider } from './context/DatabaseContext';
 
-// Layout
+// Layout & Protection
 import { AppLayout } from './components/layout/AppLayout';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 // Pages
 import { LandingPage } from './pages/LandingPage';
+import { LoginPage } from './pages/LoginPage';
 import { SearchHotelsPage } from './pages/SearchHotelsPage';
 import { BookingWizard } from './components/booking/BookingWizard';
 import { DashboardPage } from './pages/DashboardPage';
@@ -44,15 +46,15 @@ export function App() {
               <Routes>
                 {/* Public Landing & Direct Booking Routes */}
                 <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<LoginPage />} />
                 <Route path="/search" element={<SearchHotelsPage />} />
                 <Route path="/booking/new" element={<div className="min-h-screen p-4 sm:p-8 bg-slate-50 dark:bg-[#0B1120]"><BookingWizard /></div>} />
 
-                {/* Operations & Platform Shell */}
-                <Route element={<AppLayout />}>
+                {/* Operations & Platform Shell (Protected) */}
+                <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                   <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/book" element={<BookingWizard />} />
                   <Route path="/booking" element={<BookingWizard />} />
-                  <Route path="/booking/new" element={<BookingWizard />} />
                   <Route path="/hotels" element={<HotelsPage />} />
                   <Route path="/rooms" element={<RoomsPage />} />
                   <Route path="/room-types" element={<RoomTypesPage />} />
