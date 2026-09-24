@@ -8,7 +8,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from apps.core.models import (
-    Booking, BookingRoom, CheckIn, Customer, Room, RoomType, Hotel, Staff, User, CancellationRequest
+    Booking, BookingRoom, CheckIn, Customer, Room, RoomType, Hotel, Staff, User, CancellationRequest,
+    HousekeepingTask
 )
 from apps.core.utils import api_response, api_error
 from apps.reception.serializers import (
@@ -237,6 +238,28 @@ class CheckOutView(APIView):
             room.status = 'Available'
             room.housekeeping_status = 'Needs Cleaning'
             room.save()
+
+            # 5b. Safe Housekeeping Task dispatch / creation (preventing duplicate active tasks)
+            active_hk_task = HousekeepingTask.objects.select_for_update().filter(
+                room=room,
+                status__in=['Pending', 'Assigned', 'Scheduled', 'Cleaning', 'In Progress', 'Inspection']
+            ).first()
+
+            if not active_hk_task:
+                hk_staff = Staff.objects.filter(
+                    department__name__icontains='Housekeeping',
+                    status='Active'
+                ).first()
+
+                HousekeepingTask.objects.create(
+                    room=room,
+                    staff=hk_staff,
+                    task_type='Turnover Cleaning',
+                    priority='Urgent',
+                    status='Scheduled' if hk_staff else 'Pending',
+                    scheduled_time=timezone.now(),
+                    notes=f"Post-checkout turnover cleaning for Room {room.room_number}. {remarks}".strip()
+                )
 
             # 6. Update customer lifetime statistics
             customer = booking.customer

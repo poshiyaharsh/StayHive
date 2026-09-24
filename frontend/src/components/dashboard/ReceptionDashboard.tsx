@@ -20,7 +20,10 @@ import {
   AlertCircle,
   Layers,
   ChevronRight,
-  Home
+  Home,
+  Check,
+  X,
+  Play
 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
@@ -43,9 +46,15 @@ import {
 } from '../../hooks/useReception';
 import { useHotels } from '../../hooks/useHotels';
 
+import {
+  useServiceRequests,
+  useUpdateServiceRequestStatus
+} from '../../hooks/useServices';
+
 export const ReceptionDashboard: React.FC = () => {
   const [selectedHotel, setSelectedHotel] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState<'arrivals' | 'departures' | 'in-house' | 'room-status'>('arrivals');
+  const [activeTab, setActiveTab] = useState<'arrivals' | 'departures' | 'in-house' | 'room-status' | 'services'>('arrivals');
+  const [serviceStatusFilter, setServiceStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRoomStatus, setFilterRoomStatus] = useState<string>('all');
   const [filterFloor, setFilterFloor] = useState<string>('all');
@@ -74,12 +83,18 @@ export const ReceptionDashboard: React.FC = () => {
   const checkInMutation = useCheckIn();
   const checkOutMutation = useCheckOut();
 
+  const { data: serviceRequests = [], isLoading: servicesLoading, refetch: refetchServices } = useServiceRequests({
+    status: serviceStatusFilter !== 'all' ? serviceStatusFilter : undefined,
+  });
+  const updateServiceStatusMutation = useUpdateServiceRequestStatus();
+
   const handleRefreshAll = () => {
     refetchStats();
     refetchArrivals();
     refetchDepartures();
     refetchStays();
     refetchRooms();
+    refetchServices();
   };
 
   // Filtered arrivals
@@ -360,6 +375,18 @@ export const ReceptionDashboard: React.FC = () => {
           >
             <Layers className="w-4 h-4" />
             Room Status Board ({roomBoard.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab('services')}
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 ${
+              activeTab === 'services'
+                ? 'bg-amber-600 text-white shadow-sm'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+            }`}
+          >
+            <Sparkles className="w-4 h-4" />
+            Guest Services ({serviceRequests.length})
           </button>
         </div>
 
@@ -790,6 +817,145 @@ export const ReceptionDashboard: React.FC = () => {
                   </div>
                 );
               })}
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Tab 5: Guest Service Requests (Section 10) */}
+      {activeTab === 'services' && (
+        <Card className="p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                  Guest Service Requests Queue ({serviceRequests.length})
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Manage incoming concierge, laundry, spa, and guest service dispatches.
+                </p>
+              </div>
+            </div>
+
+            {/* Filter Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto bg-slate-50 dark:bg-slate-900/60 p-1.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold">
+              {['all', 'pending', 'accepted', 'in_progress', 'completed', 'cancelled'].map((st) => (
+                <button
+                  key={st}
+                  onClick={() => setServiceStatusFilter(st)}
+                  className={`px-3 py-1 rounded-lg capitalize transition-colors ${
+                    serviceStatusFilter === st
+                      ? 'bg-amber-600 text-white font-bold'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  {st.replace('_', ' ')}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {servicesLoading ? (
+            <div className="p-12 text-center text-slate-400 text-sm">
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-slate-500" />
+              Loading service requests...
+            </div>
+          ) : serviceRequests.length === 0 ? (
+            <div className="p-12 text-center text-slate-400 text-sm border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
+              No service requests matching status filter.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {serviceRequests.map((req) => (
+                <Card
+                  key={req.id}
+                  className="p-5 border-2 border-slate-200/80 dark:border-white/10 flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="text-sm font-extrabold text-slate-900 dark:text-white">
+                          Service Request #{req.id}
+                        </div>
+                        <div className="text-xs text-amber-600 dark:text-amber-400 font-bold mt-0.5">
+                          {req.service_name}
+                        </div>
+                      </div>
+                      <Badge variant={req.request_status} dot>{req.status}</Badge>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-white/5 space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
+                      <div>
+                        <strong className="text-slate-900 dark:text-white">Guest:</strong> {req.customer_name || 'Guest'}
+                      </div>
+                      <div>
+                        <strong className="text-slate-900 dark:text-white">Booking:</strong> #{req.booking_number}
+                      </div>
+                      <div>
+                        <strong className="text-slate-900 dark:text-white">Tariff:</strong> ₹{Number(req.service_price).toLocaleString('en-IN')}
+                      </div>
+                      {req.notes && (
+                        <div className="pt-1 text-slate-500 dark:text-slate-400 italic border-t border-slate-100 dark:border-white/5">
+                          "{req.notes}"
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions according to Section 10 */}
+                  <div className="pt-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-end gap-2">
+                    {req.request_status === 'pending' && (
+                      <>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => updateServiceStatusMutation.mutate({ id: req.id, status: 'accepted' })}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+                        >
+                          <Check className="w-3.5 h-3.5 mr-1" /> Accept
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => updateServiceStatusMutation.mutate({ id: req.id, status: 'rejected' })}
+                          className="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs"
+                        >
+                          <X className="w-3.5 h-3.5 mr-1" /> Reject
+                        </Button>
+                      </>
+                    )}
+
+                    {req.request_status === 'accepted' && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => updateServiceStatusMutation.mutate({ id: req.id, status: 'in_progress' })}
+                        className="text-xs"
+                      >
+                        <Play className="w-3.5 h-3.5 mr-1" /> Start
+                      </Button>
+                    )}
+
+                    {req.request_status === 'in_progress' && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => updateServiceStatusMutation.mutate({ id: req.id, status: 'completed' })}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Complete
+                      </Button>
+                    )}
+
+                    {['completed', 'cancelled', 'rejected'].includes(req.request_status) && (
+                      <span className="text-xs text-slate-400 italic">Fulfilled</span>
+                    )}
+                  </div>
+                </Card>
+              ))}
             </div>
           )}
         </Card>

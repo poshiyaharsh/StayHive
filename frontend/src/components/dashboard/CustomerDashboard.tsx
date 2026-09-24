@@ -10,10 +10,12 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { useDatabase } from '../../context/DatabaseContext';
 import { useAuth } from '../../context/AuthContext';
+import { useMyServiceRequests } from '../../hooks/useServices';
 
 export const CustomerDashboard: React.FC = () => {
   const { user } = useAuth();
   const { bookings, foodOrders, offers } = useDatabase();
+  const { data: myServiceRequests = [] } = useMyServiceRequests();
   const navigate = useNavigate();
 
   // Find user's active or upcoming booking
@@ -160,6 +162,33 @@ export const CustomerDashboard: React.FC = () => {
             ))}
           </div>
         </Card>
+        {/* Active Hotel Service Requests */}
+        {myServiceRequests.length > 0 && (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <Sparkles className="w-5 h-5 text-blue-500" />
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">Active Service Requests</h2>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/services')}>
+                All Services <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              {myServiceRequests.slice(0, 3).map((sr) => (
+                <div key={sr.id} className="p-3.5 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-900/40 flex items-center justify-between">
+                  <div>
+                    <div className="font-bold text-slate-900 dark:text-white text-sm">{sr.service_name}</div>
+                    <div className="text-xs text-slate-400">Request #{sr.id} • ₹{Number(sr.service_price).toLocaleString('en-IN')}</div>
+                    {sr.notes && <div className="text-[11px] text-slate-500 italic mt-0.5 truncate max-w-xs">"{sr.notes}"</div>}
+                  </div>
+                  <Badge variant={sr.request_status} dot>{sr.status}</Badge>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   );
