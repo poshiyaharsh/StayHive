@@ -5,6 +5,7 @@ from apps.restaurant.views import RestaurantViewSet, FoodViewSet, FoodOrderViewS
 router = DefaultRouter()
 router.register(r'restaurants', RestaurantViewSet, basename='restaurant')
 router.register(r'foods', FoodViewSet, basename='food')
+router.register(r'food-orders', FoodOrderViewSet, basename='food_order')
 router.register(r'orders', FoodOrderViewSet, basename='order')
 
 urlpatterns = [

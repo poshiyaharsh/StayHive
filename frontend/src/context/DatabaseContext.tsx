@@ -236,7 +236,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const createFoodOrder = async (orderData: any) => {
     try {
-      const res = await apiClient.post('/orders/', orderData);
+      const res = await apiClient.post('/food-orders/', orderData);
       if (res.data?.success) {
         showToast('Food order sent to the kitchen!', 'success', 'Order Placed');
         await refreshData();
@@ -250,14 +250,14 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const updateOrderStatus = async (orderId: number, status: string) => {
     try {
-      const res = await apiClient.patch(`/orders/${orderId}/update_status/`, { status });
+      const res = await apiClient.patch(`/food-orders/${orderId}/status/`, { order_status: status });
       if (res.data?.success) {
         showToast(`Order #${orderId} moved to ${status}`, 'info');
         await refreshData();
         return true;
       }
     } catch (err: any) {
-      showToast('Failed to update order status', 'error');
+      showToast(err.response?.data?.message || 'Failed to update order status', 'error');
     }
     return false;
   };
