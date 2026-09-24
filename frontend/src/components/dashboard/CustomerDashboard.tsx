@@ -11,11 +11,13 @@ import { Button } from '../ui/Button';
 import { useDatabase } from '../../context/DatabaseContext';
 import { useAuth } from '../../context/AuthContext';
 import { useMyServiceRequests } from '../../hooks/useServices';
+import { useMyInvoices } from '../../hooks/useBilling';
 
 export const CustomerDashboard: React.FC = () => {
   const { user } = useAuth();
   const { bookings, foodOrders, offers } = useDatabase();
   const { data: myServiceRequests = [] } = useMyServiceRequests();
+  const { data: myInvoices = [] } = useMyInvoices();
   const navigate = useNavigate();
 
   // Find user's active or upcoming booking
@@ -189,6 +191,46 @@ export const CustomerDashboard: React.FC = () => {
             </div>
           </Card>
         )}
+
+        {/* Guest Invoices & Billing Folio */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <FileText className="w-5 h-5 text-blue-500" />
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">My Invoices & Folios</h2>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/invoices')}>
+              All Invoices <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {myInvoices.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-sm">
+                No billing folios issued yet.
+              </div>
+            ) : (
+              myInvoices.slice(0, 3).map((inv) => (
+                <div key={inv.id} className="p-3.5 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-900/40 flex items-center justify-between">
+                  <div>
+                    <div className="font-bold text-slate-900 dark:text-white text-sm">{inv.invoice_number}</div>
+                    <div className="text-xs text-slate-400">
+                      Total: ₹{Number(inv.grand_total).toLocaleString('en-IN')} • Outstanding: ₹{Number(inv.outstanding_balance || 0).toLocaleString('en-IN')}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={inv.status.toLowerCase().includes('paid') && !inv.status.toLowerCase().includes('unpaid') ? 'paid' : 'pending'} dot>
+                      {inv.status}
+                    </Badge>
+                    <Button variant="outline" size="sm" onClick={() => navigate('/invoices')}>
+                      View
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
       </div>
     </div>
   );

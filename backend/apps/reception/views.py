@@ -19,6 +19,9 @@ from apps.reception.serializers import (
     ReceptionCancellationSerializer
 )
 from apps.bookings.serializers import BookingSerializer
+from apps.billing.services import (
+    generate_or_get_invoice, calculate_paid_amount, calculate_outstanding_balance
+)
 
 
 class ReceptionPermission(permissions.BasePermission):
@@ -153,6 +156,10 @@ class CheckInView(APIView):
             if room.status == 'Occupied':
                 return api_error(f"Room {room.room_number} is already occupied.", status_code=status.HTTP_400_BAD_REQUEST)
 
+            if booking_room and not booking_room.room_rate:
+                booking_room.room_rate = room.price_per_night
+                booking_room.save(update_fields=['room_rate'])
+
             # 5. Resolve staff ID from authenticated user (never trust React client)
             staff = Staff.objects.filter(user=request.user).first()
             if not staff:
@@ -272,6 +279,17 @@ class CheckOutView(APIView):
                     customer.loyalty_tier = 'Gold'
                 customer.save()
 
+            # 7. Safe Billing Folio Integration
+            invoice = generate_or_get_invoice(booking)
+            paid_amount = calculate_paid_amount(invoice)
+            outstanding = calculate_outstanding_balance(invoice)
+
+            if serializer.validated_data.get('enforce_settlement', False) and outstanding > Decimal('0.00'):
+                return api_error(
+                    f"Booking cannot be finalized. Outstanding balance of ₹{outstanding} must be settled.",
+                    status_code=status.HTTP_400_BAD_REQUEST
+                )
+
         return api_response(
             success=True,
             message="Guest checked out successfully.",
@@ -280,7 +298,21 @@ class CheckOutView(APIView):
                 "status": "checked_out",
                 "room_number": room.room_number,
                 "room_status": "available",
-                "housekeeping_status": "dirty"
+                "housekeeping_status": "dirty",
+                "billing": {
+                    "invoice_id": invoice.id,
+                    "invoice_number": invoice.invoice_number,
+                    "room_charges": float(invoice.room_charges),
+                    "food_charges": float(invoice.food_charges),
+                    "service_charges": float(invoice.service_charges),
+                    "subtotal": float(invoice.subtotal),
+                    "discount_amount": float(invoice.discount_amount),
+                    "tax_amount": float(invoice.tax_amount),
+                    "total_amount": float(invoice.grand_total),
+                    "paid_amount": float(paid_amount),
+                    "outstanding_balance": float(outstanding),
+                    "payment_status": invoice.status
+                }
             },
             status_code=status.HTTP_200_OK
         )

@@ -261,6 +261,7 @@ class Booking(models.Model):
 class BookingRoom(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='booking_rooms', db_column='booking_id')
     room = models.ForeignKey(Room, on_delete=models.RESTRICT, related_name='room_bookings', db_column='room_id')
+    room_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     allocated_at = models.DateTimeField(default=timezone.now)
 
     class Meta:

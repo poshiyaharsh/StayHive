@@ -220,7 +220,7 @@ class BookingViewSet(viewsets.ModelViewSet):
                 status='Confirmed'
             )
 
-            BookingRoom.objects.create(booking=booking, room=room)
+            BookingRoom.objects.create(booking=booking, room=room, room_rate=room.price_per_night)
 
             if applied_offer:
                 OfferApplication.objects.create(

@@ -305,6 +305,8 @@ export const useCheckOut = () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       queryClient.invalidateQueries({ queryKey: ['rooms'] });
       queryClient.invalidateQueries({ queryKey: ['analytics'] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['billing-stats'] });
     },
     onError: (err: any) => {
       const msg = err.response?.data?.message || 'Check-out failed. Please verify booking status.';

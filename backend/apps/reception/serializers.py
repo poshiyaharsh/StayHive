@@ -159,6 +159,7 @@ class CheckInRequestSerializer(serializers.Serializer):
 class CheckOutRequestSerializer(serializers.Serializer):
     booking_id = serializers.IntegerField(required=True)
     remarks = serializers.CharField(required=False, allow_blank=True)
+    enforce_settlement = serializers.BooleanField(required=False, default=False)
 
 
 class RoomStatusBoardSerializer(serializers.ModelSerializer):
