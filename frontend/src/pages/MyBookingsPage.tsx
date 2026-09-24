@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, BedDouble, KeyRound, ArrowRight, ShieldCheck, FileText, Ban, Loader2 } from 'lucide-react';
+import { Calendar, BedDouble, KeyRound, ArrowRight, ShieldCheck, FileText, Ban, Loader2, Star } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -100,6 +100,11 @@ export const MyBookingsPage: React.FC = () => {
                     <Button variant="secondary" size="sm" onClick={() => navigate('/billing')}>
                       <FileText className="w-3.5 h-3.5 mr-1" /> Invoice
                     </Button>
+                    {(b.status === 'Checked-out' || b.status === 'Completed') && (
+                      <Button variant="primary" size="sm" onClick={() => navigate('/feedback')}>
+                        <Star className="w-3.5 h-3.5 mr-1 fill-amber-400 text-amber-400" /> Rate Stay
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

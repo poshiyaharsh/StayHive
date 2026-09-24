@@ -56,6 +56,9 @@ class User(AbstractBaseUser):
         db_table = 'user'
         managed = False
 
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}".strip() or self.username
+
     def __str__(self):
         return f"{self.username} ({self.role.name if self.role else 'No Role'})"
 
@@ -508,9 +511,10 @@ class Complaint(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='complaints', db_column='customer_id')
     booking = models.ForeignKey(Booking, on_delete=models.SET_NULL, null=True, blank=True, related_name='complaints', db_column='booking_id')
     subject = models.CharField(max_length=200)
-    category = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    category = models.CharField(max_length=100, default='General')
     priority = models.CharField(max_length=20, default='Medium')
-    status = models.CharField(max_length=20, default='Open')
+    status = models.CharField(max_length=20, default='Pending')
     assigned_to = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True, blank=True, related_name='complaints_assigned', db_column='assigned_to')
     resolution_notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
@@ -523,6 +527,7 @@ class Complaint(models.Model):
 
 # 31. Inquiry
 class Inquiry(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True, related_name='inquiries', db_column='customer_id')
     customer_name = models.CharField(max_length=150)
     email = models.EmailField(max_length=150)
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -532,6 +537,7 @@ class Inquiry(models.Model):
     assigned_to = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True, blank=True, related_name='inquiries_assigned', db_column='assigned_to')
     response = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
+    responded_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = 'inquiry'
