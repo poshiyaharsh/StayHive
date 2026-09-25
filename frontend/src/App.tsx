@@ -38,6 +38,7 @@ import { MyBookingsPage } from './pages/MyBookingsPage';
 import { ProfilePage } from './pages/ProfilePage';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,17 +46,21 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       staleTime: 1000 * 60 * 2,
     },
+    mutations: {
+      retry: false, // Phase 67: Prevent duplicate mutations for financial and booking requests
+    },
   },
 });
 
 export function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <NotificationProvider>
-          <AuthProvider>
-            <DatabaseProvider>
-              <BrowserRouter>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <NotificationProvider>
+            <AuthProvider>
+              <DatabaseProvider>
+                <BrowserRouter>
               <Routes>
                 {/* Public Landing & Direct Booking Routes */}
                 <Route path="/" element={<LandingPage />} />
@@ -100,6 +105,7 @@ export function App() {
       </NotificationProvider>
     </ThemeProvider>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

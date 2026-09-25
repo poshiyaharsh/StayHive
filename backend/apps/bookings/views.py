@@ -24,7 +24,14 @@ class BookingPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if view.action in ['availability']:
             return True
-        return bool(request.user and request.user.is_authenticated)
+        if not (request.user and request.user.is_authenticated):
+            return False
+
+        role = getattr(request.user.role, 'name', '') if getattr(request.user, 'role', None) else ''
+        if view.action in ['check_in', 'check_out', 'confirm']:
+            return role in ['ADMIN', 'MANAGER', 'RECEPTION']
+
+        return True
 
     def has_object_permission(self, request, view, obj):
         if not request.user or not request.user.is_authenticated:
@@ -33,6 +40,9 @@ class BookingPermission(permissions.BasePermission):
         role = getattr(request.user.role, 'name', '') if getattr(request.user, 'role', None) else ''
         if role in ['ADMIN', 'MANAGER', 'RECEPTION']:
             return True
+
+        if view.action in ['check_in', 'check_out', 'confirm']:
+            return False
 
         # Customer role can ONLY view and interact with their own booking
         if role == 'CUSTOMER':
@@ -98,6 +108,16 @@ class BookingViewSet(viewsets.ModelViewSet):
         data['food_orders'] = list(booking.food_orders.values('id', 'order_time', 'total_amount', 'status'))
         data['service_requests'] = list(booking.service_requests.values('id', 'service__name', 'requested_at', 'status'))
         return api_response(success=True, data=data)
+
+    def update(self, request, *args, **kwargs):
+        if 'status' in request.data:
+            return api_error("Direct booking status modification is prohibited. Use dedicated workflow actions (e.g., check-in, check-out, cancel).", status_code=status.HTTP_400_BAD_REQUEST)
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        if 'status' in request.data:
+            return api_error("Direct booking status modification is prohibited. Use dedicated workflow actions (e.g., check-in, check-out, cancel).", status_code=status.HTTP_400_BAD_REQUEST)
+        return super().partial_update(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         """
@@ -185,6 +205,16 @@ class BookingViewSet(viewsets.ModelViewSet):
 
                 if not room:
                     return api_error("No available rooms found for the selected category and dates.", status_code=status.HTTP_400_BAD_REQUEST)
+
+                # Concurrency double check after acquiring row lock
+                overlap_check = BookingRoom.objects.filter(
+                    room_id=room.id,
+                    booking__status__in=['Confirmed', 'Checked-in'],
+                    booking__check_in_date__lt=check_out,
+                    booking__check_out_date__gt=check_in
+                ).exists()
+                if overlap_check:
+                    return api_error("The selected room has just been reserved. Please try again.", status_code=status.HTTP_409_CONFLICT)
 
             # Authoritative pricing
             nights = max(1, (check_out - check_in).days)

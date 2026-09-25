@@ -33,16 +33,34 @@ class StaffSerializer(serializers.ModelSerializer):
         ]
 
 
+class StaffPermission(permissions.BasePermission):
+    """
+    Staff management permission:
+    - ADMIN, MANAGER: Full access.
+    - RECEPTION: Read-only access to view staff roster.
+    - CUSTOMER and unauthenticated: Denied (Phase 68).
+    """
+    def has_permission(self, request, view):
+        if not (request.user and request.user.is_authenticated):
+            return False
+        role = getattr(request.user.role, 'name', '') if getattr(request.user, 'role', None) else ''
+        if role in ['ADMIN', 'MANAGER']:
+            return True
+        if role == 'RECEPTION':
+            return request.method in permissions.SAFE_METHODS
+        return False
+
+
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [StaffPermission]
 
 
 class StaffViewSet(viewsets.ModelViewSet):
     queryset = Staff.objects.all().select_related('user', 'department', 'hotel').order_by('-performance_score')
     serializer_class = StaffSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [StaffPermission]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['user__first_name', 'user__last_name', 'designation', 'department__name']
     ordering_fields = ['performance_score', 'salary', 'joined_date']

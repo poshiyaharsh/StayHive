@@ -57,9 +57,11 @@ class FoodOrderPermission(permissions.BasePermission):
             return request.method in permissions.SAFE_METHODS
         if role == 'CUSTOMER':
             # Customers can list (filtered to own), retrieve (own only), create, or cancel
+            if view.action in ['status_update', 'stats', 'update', 'partial_update', 'destroy']:
+                return False
             if view.action in ['list', 'retrieve', 'create', 'my', 'cancel']:
                 return True
-            if request.method in permissions.SAFE_METHODS or request.method == 'POST':
+            if request.method in permissions.SAFE_METHODS:
                 return True
             return False
         return False
@@ -71,6 +73,8 @@ class FoodOrderPermission(permissions.BasePermission):
         if role == 'RECEPTION':
             return request.method in permissions.SAFE_METHODS
         if role == 'CUSTOMER':
+            if view.action in ['status_update', 'update', 'partial_update', 'destroy']:
+                return False
             # Check customer ownership
             if obj.customer and obj.customer.user == request.user:
                 return True

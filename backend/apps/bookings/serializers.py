@@ -49,6 +49,10 @@ class BookingSerializer(serializers.ModelSerializer):
             'total_amount', 'discount_amount', 'net_amount', 'status', 'created_at',
             'rooms', 'applied_offers', 'check_in_record', 'cancellation_request'
         ]
+        read_only_fields = [
+            'id', 'booking_number', 'status', 'total_amount', 'discount_amount',
+            'net_amount', 'created_at'
+        ]
 
     def get_customer_name(self, obj):
         if obj.customer and obj.customer.user:

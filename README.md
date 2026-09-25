@@ -192,9 +192,57 @@ All default accounts are pre-seeded in the database:
 | `/api/feedback/` | `GET`, `POST` | Guest star ratings and reviews |
 | `/api/complaints/` | `GET`, `POST` | Operational issues & incident resolution |
 | `/api/inquiries/` | `GET`, `POST` | Pre-booking inquiries |
+| `/api/notifications/` | `GET` | User-isolated notification center with unread count |
 | `/api/analytics/overview/` | `GET` | Revenue, ADR, RevPAR, and occupancy analytics |
+| `/api/reports/revenue/` | `GET` | Financial reports with date filtering and CSV export |
+| `/api/health/` | `GET` | Production health check (`{"status": "ok"}`) |
+| `/api/health/readiness/` | `GET` | Database connectivity readiness check (`{"status": "ready"}`) |
+
+---
+
+## 🔒 Security & Hardening (Checkpoint 11)
+
+StayHive has been hardened for enterprise production environments:
+- **Zero Hardcoded Secrets**: All keys, passwords, and sensitive settings are driven by environment variables (`.env`).
+- **Production Exception Masking**: Internal stack traces and database exceptions are masked behind safe API responses while being logged to rotating server files (`stayhive.log`).
+- **Role-Based Access Control (RBAC)**: Strict server-side authorization ensures Customers cannot access Admin/Staff views, Housekeeping cannot access payments, and Restaurant cannot access billing folios.
+- **Object-Level Authorization**: Strict ownership validation ensures Customers can only view and mutate their own bookings, folios, orders, service requests, and notifications.
+- **Double-Booking & Race Condition Prevention**: Database row-locking (`select_for_update`) and transactional concurrency checks guarantee room availability across overlapping dates.
+- **Financial Precision**: All monetary values (invoices, payments, refunds, taxes, discounts) strictly utilize quantized `Decimal` arithmetic.
+- **Deployment Hardening**: Automated checks (`python manage.py check --deploy`) confirm 0 issues under production settings.
+
+---
+
+## 🧪 Automated Testing & Verification
+
+StayHive features complete end-to-end and regression test coverage across all checkpoints:
+
+```bash
+cd backend
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+
+# Run CP11 Security, Concurrency & Acceptance Suite (79 Tests)
+python test_checkpoint11.py
+
+# Run Cumulative Regression Suites (CP5–CP10)
+python test_checkpoint10.py  # Notifications, Analytics, Reports (104 Tests)
+python test_checkpoint9.py   # Feedback, Complaints, Inquiries (58 Tests)
+python test_checkpoint8.py   # Invoices, Payments, Refunds (71 Tests)
+python test_checkpoint7.py   # Services & Housekeeping (42 Tests)
+python test_checkpoint6.py   # Restaurant & Food Orders (34 Tests)
+python test_checkpoint5.py   # Reception Operations (29 Tests)
+```
+
+**Total automated tests: 417 passing, 0 failing.**
+
+---
+
+## 🚀 Production Deployment
+
+For complete server setup, Gunicorn configuration, Nginx reverse proxy, SSL/HTTPS certificates, and automated MySQL backup instructions, see the dedicated [Deployment Guide](DEPLOYMENT.md).
 
 ---
 
 ## 📄 License
 This project is licensed under the MIT License.
+

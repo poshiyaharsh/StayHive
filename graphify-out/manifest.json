@@ -12,10 +12,10 @@
     "semantic_hash": "b7d4afc9ab81e25007b0ee1cf87f0ec8"
   },
   "backend/apps/accounts/serializers.py": {
-    "mtime": 1790169488.540241,
-    "seen": 1790175354.643162,
-    "ast_hash": "7127027c19d8da280567d939309c6c04",
-    "semantic_hash": "7127027c19d8da280567d939309c6c04"
+    "mtime": 1790329440.5464425,
+    "seen": 1790330631.1051364,
+    "ast_hash": "5a4965ac85e81e06267b3d2511d32a57",
+    "semantic_hash": ""
   },
   "backend/apps/accounts/urls.py": {
     "mtime": 1790169523.4621463,
@@ -24,10 +24,10 @@
     "semantic_hash": "ff37389cdb29236d10b69448bb45a29e"
   },
   "backend/apps/accounts/views.py": {
-    "mtime": 1790169509.7807708,
-    "seen": 1790175354.643162,
-    "ast_hash": "242e0785aa763496a9127b2b50bb1a2f",
-    "semantic_hash": "242e0785aa763496a9127b2b50bb1a2f"
+    "mtime": 1790329454.9502773,
+    "seen": 1790330631.1051364,
+    "ast_hash": "34703a9d1de4ec3e175c97e7ca8dd637",
+    "semantic_hash": ""
   },
   "backend/apps/analytics/urls.py": {
     "mtime": 1790252810.4774082,
@@ -54,10 +54,10 @@
     "semantic_hash": ""
   },
   "backend/apps/bookings/serializers.py": {
-    "mtime": 1790171899.829146,
-    "seen": 1790175354.643162,
-    "ast_hash": "88accde82f811545128e4997dd2bb6e0",
-    "semantic_hash": "88accde82f811545128e4997dd2bb6e0"
+    "mtime": 1790329487.0847678,
+    "seen": 1790330631.1051364,
+    "ast_hash": "4a318fdd3658c8117f97c1c77834de0f",
+    "semantic_hash": ""
   },
   "backend/apps/bookings/urls.py": {
     "mtime": 1790164741.3290944,
@@ -66,9 +66,9 @@
     "semantic_hash": "1c9e8227e9d2dc88aee8ce20a3f136b8"
   },
   "backend/apps/bookings/views.py": {
-    "mtime": 1790327332.531469,
-    "seen": 1790328398.2658541,
-    "ast_hash": "5c884a631e6390db810081e7f8e203e4",
+    "mtime": 1790329639.6582825,
+    "seen": 1790330631.1051364,
+    "ast_hash": "6b69b85e61056266c209816ce162c647",
     "semantic_hash": ""
   },
   "backend/apps/cancellations/urls.py": {
@@ -204,10 +204,10 @@
     "semantic_hash": "994d3781331a7a1f8e86c422ef13ed36"
   },
   "backend/apps/offers/views.py": {
-    "mtime": 1790164857.2470672,
-    "seen": 1790175354.643162,
-    "ast_hash": "ae6f4cb0e6ced4f0d5559fd82f682e35",
-    "semantic_hash": "ae6f4cb0e6ced4f0d5559fd82f682e35"
+    "mtime": 1790329655.5620477,
+    "seen": 1790330631.111793,
+    "ast_hash": "1ebcfa5b7bd14f7f04c90bba620fa84a",
+    "semantic_hash": ""
   },
   "backend/apps/restaurant/urls.py": {
     "mtime": 1790177424.9571598,
@@ -258,10 +258,10 @@
     "semantic_hash": "b42499a8d1046bae5d0bbc61abd5d717"
   },
   "backend/apps/staff/views.py": {
-    "mtime": 1790164763.5113778,
-    "seen": 1790175354.643162,
-    "ast_hash": "19a50ca2048ac52de04f2806c99e4a62",
-    "semantic_hash": "19a50ca2048ac52de04f2806c99e4a62"
+    "mtime": 1790329985.754169,
+    "seen": 1790330631.111793,
+    "ast_hash": "a3341b4f43de343b65f1e4eac5f0b274",
+    "semantic_hash": ""
   },
   "backend/config/__init__.py": {
     "mtime": 1790167151.2975717,
@@ -276,15 +276,15 @@
     "semantic_hash": "985d200d047eaf8e64917dfed04eac5a"
   },
   "backend/config/settings.py": {
-    "mtime": 1790252829.1890264,
-    "seen": 1790328398.281845,
-    "ast_hash": "23b917531f7fbf1c22aab7cd6b0153fa",
+    "mtime": 1790329391.0217092,
+    "seen": 1790330631.111793,
+    "ast_hash": "a34751165926d9595c6fead38c51ebf4",
     "semantic_hash": ""
   },
   "backend/config/urls.py": {
-    "mtime": 1790252888.333893,
-    "seen": 1790328398.281845,
-    "ast_hash": "c1406f5bff17cda43216173cfa1354ec",
+    "mtime": 1790329469.8820248,
+    "seen": 1790330631.111793,
+    "ast_hash": "1e4979a7102878e1cf544abb33ee0ae6",
     "semantic_hash": ""
   },
   "backend/config/wsgi.py": {
@@ -336,16 +336,16 @@
     "semantic_hash": "10f00d2bfc2e81cdc485ea5d673ef6d2"
   },
   "frontend/src/App.tsx": {
-    "mtime": 1790328206.5143874,
-    "seen": 1790328398.281845,
-    "ast_hash": "c9cb529be59fe6d1a128d0d492f3a7ca",
+    "mtime": 1790329751.5692003,
+    "seen": 1790330631.116059,
+    "ast_hash": "53ef2233a234ee946e2d3a99bd96e9c0",
     "semantic_hash": ""
   },
   "frontend/src/api/client.ts": {
-    "mtime": 1790169782.5827281,
-    "seen": 1790175354.643162,
-    "ast_hash": "2ca9e2586458a2b656a07fed1230c415",
-    "semantic_hash": "2ca9e2586458a2b656a07fed1230c415"
+    "mtime": 1790329761.23799,
+    "seen": 1790330631.116059,
+    "ast_hash": "0e213166ec3effb08e91fa6ac08a8265",
+    "semantic_hash": ""
   },
   "frontend/src/components/auth/ProtectedRoute.tsx": {
     "mtime": 1790169882.4499218,
@@ -840,9 +840,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1790167237.0142903,
-    "seen": 1790176908.2240996,
-    "ast_hash": "da20f0832a195509d8a6e0d875538345",
+    "mtime": 1790330551.4811637,
+    "seen": 1790330631.124099,
+    "ast_hash": "bc792de349847a4874f5a7d40df75311",
     "semantic_hash": ""
   },
   "backend/README.md": {
@@ -900,9 +900,9 @@
     "semantic_hash": ""
   },
   "backend/apps/restaurant/permissions.py": {
-    "mtime": 1790177383.4189584,
-    "seen": 1790242273.0743296,
-    "ast_hash": "d88e71af177c26546fc0887659e09c98",
+    "mtime": 1790329613.9613402,
+    "seen": 1790330631.111793,
+    "ast_hash": "ae6b974018ce8d5dc47257ea4116b933",
     "semantic_hash": ""
   },
   "backend/apps/restaurant/serializers.py": {
@@ -1179,6 +1179,48 @@
     "mtime": 1790328181.0136101,
     "seen": 1790328398.2884057,
     "ast_hash": "2357a1688598d6f76b04694327ab148a",
+    "semantic_hash": ""
+  },
+  "backend/apps/core/exceptions.py": {
+    "mtime": 1790329343.967077,
+    "seen": 1790330631.1091473,
+    "ast_hash": "d7801be0fce59c6cebbadbc288d7807e",
+    "semantic_hash": ""
+  },
+  "backend/database/migration_cp11.py": {
+    "mtime": 1790329354.6324906,
+    "seen": 1790330631.111793,
+    "ast_hash": "84b7ec83479bccc513ec4e397eb23b4a",
+    "semantic_hash": ""
+  },
+  "backend/gunicorn.conf.py": {
+    "mtime": 1790329847.4037664,
+    "seen": 1790330631.111793,
+    "ast_hash": "64f4a14be0eaeaf91881fc1fae021542",
+    "semantic_hash": ""
+  },
+  "backend/test_checkpoint11.py": {
+    "mtime": 1790330399.435415,
+    "seen": 1790330631.111793,
+    "ast_hash": "05b1403cee8552bb8b32af5de85c9c70",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/ui/ErrorBoundary.tsx": {
+    "mtime": 1790329812.569893,
+    "seen": 1790330631.1180668,
+    "ast_hash": "34ac768856bf054deda57c24e4abfbee",
+    "semantic_hash": ""
+  },
+  ".github/workflows/ci.yml": {
+    "mtime": 1790329866.054204,
+    "seen": 1790330631.124099,
+    "ast_hash": "594a89cbfea1eedc90f8b93c301749b5",
+    "semantic_hash": ""
+  },
+  "DEPLOYMENT.md": {
+    "mtime": 1790330538.450899,
+    "seen": 1790330631.124099,
+    "ast_hash": "7ef3faf5526ca2b8f363a98d736c081f",
     "semantic_hash": ""
   }
 }

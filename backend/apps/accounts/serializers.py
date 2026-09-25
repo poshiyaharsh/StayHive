@@ -36,7 +36,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'password', 'first_name', 'last_name', 'phone', 'role_name']
 
     def create(self, validated_data):
-        role_name = validated_data.pop('role_name', 'CUSTOMER')
+        requested_role = validated_data.pop('role_name', 'CUSTOMER')
+        request = self.context.get('request')
+        is_admin = bool(
+            request and request.user and request.user.is_authenticated and
+            getattr(request.user.role, 'name', '') == 'ADMIN'
+        )
+        role_name = requested_role if is_admin else 'CUSTOMER'
         role, _ = Role.objects.get_or_create(name=role_name)
         validated_data['password'] = make_password(validated_data['password'])
         validated_data['role'] = role

@@ -110,19 +110,34 @@ class HealthCheckView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
+        return Response({
+            "status": "ok",
+            "success": True,
+            "message": "StayHive API is healthy",
+            "service": "StayHive Hospitality Core",
+            "version": "1.0.0"
+        })
+
+
+class ReadinessCheckView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
         try:
             from django.db import connection
             with connection.cursor() as cursor:
                 cursor.execute("SELECT 1")
             db_status = "connected"
+            status_code = status.HTTP_200_OK
         except Exception:
             db_status = "disconnected"
+            status_code = status.HTTP_503_SERVICE_UNAVAILABLE
 
         return Response({
-            "success": True,
-            "message": "StayHive API is running",
+            "status": "ready" if db_status == "connected" else "unready",
+            "success": db_status == "connected",
             "database": db_status
-        })
+        }, status=status_code)
 
 
 class RoleListView(APIView):
