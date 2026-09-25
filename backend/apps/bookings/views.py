@@ -522,7 +522,20 @@ class BookingViewSet(viewsets.ModelViewSet):
         )
 
 
+class CheckInPermission(permissions.BasePermission):
+    """
+    Check-in Record Permissions:
+    - Front Desk (ADMIN, MANAGER, RECEPTION): Full access to check-in records.
+    - Customer, Housekeeping, Restaurant: 403 Forbidden.
+    """
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        role = getattr(request.user.role, 'name', '') if getattr(request.user, 'role', None) else ''
+        return role in ['ADMIN', 'MANAGER', 'RECEPTION']
+
+
 class CheckInViewSet(viewsets.ModelViewSet):
     queryset = CheckIn.objects.all().order_by('-check_in_time')
     serializer_class = CheckInSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [CheckInPermission]

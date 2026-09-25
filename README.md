@@ -221,6 +221,9 @@ StayHive features complete end-to-end and regression test coverage across all ch
 cd backend
 source venv/bin/activate  # or venv\Scripts\activate on Windows
 
+# Run CP12 Final QA & End-to-End Launch Verification Suite (81 Tests)
+python test_checkpoint12.py
+
 # Run CP11 Security, Concurrency & Acceptance Suite (79 Tests)
 python test_checkpoint11.py
 
@@ -233,7 +236,7 @@ python test_checkpoint6.py   # Restaurant & Food Orders (34 Tests)
 python test_checkpoint5.py   # Reception Operations (29 Tests)
 ```
 
-**Total automated tests: 417 passing, 0 failing.**
+**Total automated test suite: 498 passing, 0 failing across all checkpoints.**
 
 ---
 

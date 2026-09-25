@@ -1,24 +1,24 @@
 # Graph Report - StayHive  (2026-09-25)
 
 ## Corpus Check
-- 196 files · ~122,923 words
+- 197 files · ~126,176 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1426 nodes · 3813 edges · 89 communities (63 shown, 16 thin omitted)
-- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 327 edges (avg confidence: 0.95)
+- 1437 nodes · 3854 edges · 97 communities (62 shown, 24 thin omitted)
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 327 edges (avg confidence: 0.95)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `eb5ac76a`
+- Built from commit: `8126c099`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- useAuth
+- react
 - database.ts
 - accounts/views.py
-- bookings/views.py
+- Room
 - useRooms.ts
 - useNotification
 - compilerOptions
@@ -26,30 +26,30 @@
 - package.json
 - What You Must Do When Invoked
 - test_checkpoint8.py
-- api_error
-- reports/views.py
+- OfferPackageViewSet
+- reports/services.py
 - ReceptionDepartureSerializer
 - api_response
 - compilerOptions
-- Booking
+- reception/views.py
 - hotels/views.py
 - App.tsx
-- useReception.ts
+- ReceptionDashboard.tsx
 - dependencies
-- staff/views.py
+- Booking
 - ServiceRequestViewSet
 - devDependencies
 - StayHive Hospitality Platform — Production Deployment Guide
-- RoomSerializer
+- api_error
 - NotificationViewSet
 - graphify reference: extra exports and benchmark
 - lucide-react
 - BookingWizard.tsx
 - get_user_role
-- InquiryViewSet
+- RoomSerializer
 - useBookings.ts
 - ComplaintViewSet
-- HousekeepingTaskViewSet
+- notify_role
 - .oxlintrc.json
 - graphify reference: query, path, explain
 - scripts
@@ -81,30 +81,37 @@
 - client.ts
 - ServiceRequestPermission
 - ServiceRequestSerializer
-- ReceptionPermission
+- InvoicesPage.tsx
 - analytics/views.py
 - restaurant/views.py
 - Header.tsx
-- NotificationContext.tsx
+- useServices.ts
 - notify_customer
 - ReportsConfig
 - constants.py
-- InvoicesPage.tsx
-- AdminDashboard.tsx
+- ReceptionActiveStaySerializer
+- ReceptionArrivalSerializer
 - ErrorBoundary
 - migration_cp11.py
 - gunicorn.conf.py
+- reception/urls.py
+- RoomStatusBoardSerializer
+- ReceptionCancellationSerializer
+- test_checkpoint12.py
+- CheckInPermission
+- OfferPermission
+- CSVRenderer
 
 ## God Nodes (most connected - your core abstractions)
 1. `api_response()` - 167 edges
 2. `api_error()` - 91 edges
-3. `Customer` - 66 edges
-4. `Booking` - 60 edges
+3. `Customer` - 67 edges
+4. `Booking` - 61 edges
 5. `react` - 59 edges
 6. `useNotification()` - 51 edges
-7. `Staff` - 44 edges
+7. `Staff` - 45 edges
 8. `lucide-react` - 44 edges
-9. `Room` - 42 edges
+9. `Room` - 43 edges
 10. `useAuth()` - 37 edges
 
 ## Surprising Connections (you probably didn't know these)
@@ -122,11 +129,11 @@
 ## Import Cycles
 - None detected.
 
-## Communities (89 total, 16 thin omitted)
+## Communities (97 total, 24 thin omitted)
 
-### Community 0 - "useAuth"
-Cohesion: 0.12
-Nodes (24): ProtectedRoute(), ProtectedRouteProps, CustomerDashboard(), AppLayout(), MobileNav(), Sidebar(), SidebarProps, AuthContext (+16 more)
+### Community 0 - "react"
+Cohesion: 0.15
+Nodes (22): ProtectedRoute(), ProtectedRouteProps, AppLayout(), CommandPalette(), CommandPaletteProps, MobileNav(), Sidebar(), SidebarProps (+14 more)
 
 ### Community 1 - "database.ts"
 Cohesion: 0.10
@@ -136,17 +143,17 @@ Nodes (39): DatabaseContext, DatabaseContextType, AnalyticsOverview, ApiResponse
 Cohesion: 0.14
 Nodes (17): authenticate_stayhive_user(), get_tokens_for_user(), Generate JWT access and refresh tokens with user payload., Authenticate against custom User table with password check. Supports standard…, LoginSerializer, Meta, RegisterSerializer, RoleSerializer (+9 more)
 
-### Community 3 - "bookings/views.py"
-Cohesion: 0.11
-Nodes (15): BookingCreateSerializer, BookingRoomSerializer, CheckInSerializer, Meta, OfferApplicationSerializer, BookingViewSet, CheckInViewSet, BookingRoom (+7 more)
+### Community 3 - "Room"
+Cohesion: 0.15
+Nodes (18): BookingCreateSerializer, BookingRoomSerializer, CheckInSerializer, Meta, OfferApplicationSerializer, BookingViewSet, CheckInViewSet, BookingRoom (+10 more)
 
 ### Community 4 - "useRooms.ts"
-Cohesion: 0.16
-Nodes (14): RoomGrid(), RoomFilters, useCreateRoom(), useCreateRoomType(), useDeleteRoom(), useDeleteRoomType(), useRooms(), useRoomTypes() (+6 more)
+Cohesion: 0.17
+Nodes (13): RoomGrid(), RoomFilters, useCreateRoom(), useCreateRoomType(), useDeleteRoom(), useDeleteRoomType(), useRoomTypes(), useUpdateRoom() (+5 more)
 
 ### Community 5 - "useNotification"
-Cohesion: 0.08
-Nodes (29): DatabaseProvider(), useNotification(), BillingStats, CancellationItem, CreatePaymentPayload, InvoiceFilters, InvoiceItem, PaymentItem (+21 more)
+Cohesion: 0.12
+Nodes (16): DatabaseProvider(), useNotification(), BillingStats, CancellationItem, CreatePaymentPayload, InvoiceFilters, InvoiceItem, PaymentItem (+8 more)
 
 ### Community 6 - "compilerOptions"
 Cohesion: 0.10
@@ -165,55 +172,47 @@ Cohesion: 0.07
 Nodes (26): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+18 more)
 
 ### Community 10 - "test_checkpoint8.py"
-Cohesion: 0.11
-Nodes (40): InvoiceCreateSerializer, Meta, PaymentMethodSerializer, PaymentSerializer, calculate_discount(), calculate_food_charges(), calculate_invoice_totals(), calculate_outstanding_balance() (+32 more)
+Cohesion: 0.10
+Nodes (44): InvoiceCreateSerializer, InvoiceSerializer, Meta, PaymentMethodSerializer, PaymentSerializer, calculate_discount(), calculate_food_charges(), calculate_invoice_totals() (+36 more)
 
-### Community 11 - "api_error"
-Cohesion: 0.15
-Nodes (7): custom_exception_handler(), Production-safe DRF exception handler. - Captures and logs all unhandled…, api_error(), Meta, OfferPackageSerializer, OfferPackageViewSet, action
-
-### Community 12 - "reports/views.py"
-Cohesion: 0.09
-Nodes (26): parse_date_range(), Parses request query params into timezone-aware datetime bounds and date…, get_role_name(), Strict role permissions for operational & management reports: - CUSTOMER: 403…, ReportPermission, export_csv(), get_bookings_report(), get_customers_report() (+18 more)
-
-### Community 13 - "ReceptionDepartureSerializer"
-Cohesion: 0.07
-Nodes (5): Meta, ReceptionActiveStaySerializer, ReceptionArrivalSerializer, ReceptionDepartureSerializer, RoomStatusBoardSerializer
+### Community 12 - "reports/services.py"
+Cohesion: 0.13
+Nodes (23): get_role_name(), Strict role permissions for operational & management reports: - CUSTOMER: 403…, ReportPermission, export_csv(), get_bookings_report(), get_customers_report(), get_food_report(), get_housekeeping_report() (+15 more)
 
 ### Community 14 - "api_response"
-Cohesion: 0.11
-Nodes (6): api_response(), Standard StayHive API response structure: { "success": true, "message": "...",…, FoodViewSet, CRUD for Hotel Restaurants. - ADMIN, MANAGER: full CRUD - RESTAURANT,…, CRUD for Food Menu Items. - ADMIN, MANAGER, RESTAURANT: full CRUD - RECEPTION,…, RestaurantViewSet
+Cohesion: 0.10
+Nodes (8): parse_date_range(), Parses request query params into timezone-aware datetime bounds and date…, api_response(), Standard StayHive API response structure: { "success": true, "message": "...",…, FoodViewSet, CRUD for Hotel Restaurants. - ADMIN, MANAGER: full CRUD - RESTAURANT,…, CRUD for Food Menu Items. - ADMIN, MANAGER, RESTAURANT: full CRUD - RECEPTION,…, RestaurantViewSet
 
 ### Community 15 - "compilerOptions"
 Cohesion: 0.12
 Nodes (16): compilerOptions, allowImportingTsExtensions, erasableSyntaxOnly, lib, module, moduleDetection, noEmit, noFallthroughCasesInSwitch (+8 more)
 
-### Community 16 - "Booking"
-Cohesion: 0.21
-Nodes (16): Booking, CancellationRequest, Room, CheckInRequestSerializer, CheckOutRequestSerializer, ReceptionCancellationSerializer, ActiveStaysView, ArrivalsView (+8 more)
+### Community 16 - "reception/views.py"
+Cohesion: 0.29
+Nodes (6): CheckInRequestSerializer, CheckOutRequestSerializer, CheckInView, CheckOutView, Ensures only FRONT DESK (RECEPTION, MANAGER, ADMIN) can access reception…, ReceptionPermission
 
 ### Community 17 - "hotels/views.py"
 Cohesion: 0.07
 Nodes (21): Gallery, HotelFacility, IsAdmin, IsCustomer, IsHousekeeping, IsManager, IsReception, IsRestaurant (+13 more)
 
 ### Community 18 - "App.tsx"
-Cohesion: 0.14
-Nodes (27): App(), queryClient, CommandPalette(), CommandPaletteProps, Badge(), BadgeProps, BadgeVariant, Card() (+19 more)
+Cohesion: 0.16
+Nodes (16): App(), queryClient, useDatabase(), useBooking(), useCancelBooking(), useMyBookings(), BookingDetailsPage(), BookingsPage() (+8 more)
 
-### Community 19 - "useReception.ts"
-Cohesion: 0.14
-Nodes (16): ReceptionDashboard(), CheckInPayload, CheckOutPayload, ReceptionActiveStay, ReceptionArrival, ReceptionCancellation, ReceptionDashboardStats, ReceptionDeparture (+8 more)
+### Community 19 - "ReceptionDashboard.tsx"
+Cohesion: 0.17
+Nodes (19): ReceptionDashboard(), useHotels(), CheckInPayload, CheckOutPayload, ReceptionActiveStay, ReceptionArrival, ReceptionCancellation, ReceptionDashboardStats (+11 more)
 
 ### Community 20 - "dependencies"
 Cohesion: 0.14
 Nodes (14): dependencies, axios, canvas-confetti, clsx, framer-motion, lucide-react, react, react-dom (+6 more)
 
-### Community 21 - "staff/views.py"
-Cohesion: 0.19
-Nodes (8): Department, DepartmentSerializer, DepartmentViewSet, Meta, Staff management permission: - ADMIN, MANAGER: Full access. - RECEPTION: Read-…, StaffPermission, StaffSerializer, StaffViewSet
+### Community 21 - "Booking"
+Cohesion: 0.11
+Nodes (14): ComplaintStatusUpdateSerializer, ComplaintPagination, PageNumberPagination, Booking, Complaint, Feedback, Inquiry, FeedbackPagination (+6 more)
 
 ### Community 22 - "ServiceRequestViewSet"
-Cohesion: 0.15
+Cohesion: 0.14
 Nodes (5): action, CRUD and status transitions for Guest Service Requests: - ADMIN, MANAGER,…, CRUD for Hotel Services: - ADMIN, MANAGER: Full CRUD - RECEPTION: View services…, ServiceRequestViewSet, ServiceViewSet
 
 ### Community 23 - "devDependencies"
@@ -224,9 +223,9 @@ Nodes (12): devDependencies, autoprefixer, oxlint, postcss, tailwindcss, @types/
 Cohesion: 0.05
 Nodes (37): 10. SSL / HTTPS Configuration (Let's Encrypt), 11. Health & Readiness Verification, 12. Automated Database Backup & Disaster Recovery Plan, 13. Security Hardening Checklist, 1. Production Architecture Overview, 2. Server Prerequisites, 3. System Packages Installation, 4. MySQL Production Configuration (+29 more)
 
-### Community 25 - "RoomSerializer"
-Cohesion: 0.08
-Nodes (13): Public or authenticated endpoint to query available rooms and categories using…, RoomAmenity, Meta, RoomAmenitySerializer, RoomSerializer, RoomTypeSerializer, action, Fast status transition: Available, Occupied, Reserved, Maintenance, Cleaning (+5 more)
+### Community 25 - "api_error"
+Cohesion: 0.09
+Nodes (8): custom_exception_handler(), Production-safe DRF exception handler. - Captures and logs all unhandled…, api_error(), action, Fast status transition: Available, Occupied, Reserved, Maintenance, Cleaning, RoomAmenityViewSet, RoomTypeViewSet, RoomViewSet
 
 ### Community 26 - "NotificationViewSet"
 Cohesion: 0.15
@@ -237,32 +236,32 @@ Cohesion: 0.22
 Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
 
 ### Community 28 - "lucide-react"
-Cohesion: 0.17
-Nodes (22): Button(), ButtonProps, EmptyState(), EmptyStateProps, Props, State, Input, InputProps (+14 more)
+Cohesion: 0.15
+Nodes (28): Badge(), BadgeProps, BadgeVariant, Button(), ButtonProps, Card(), CardProps, EmptyState() (+20 more)
 
 ### Community 29 - "BookingWizard.tsx"
-Cohesion: 0.23
-Nodes (8): DatePicker(), DatePickerProps, StatusBadge(), StatusBadgeProps, StatusVariant, StepItem, Stepper(), StepperProps
+Cohesion: 0.14
+Nodes (15): BookingWizard(), DatePicker(), DatePickerProps, Select(), SelectOption, SelectProps, StatusBadge(), StatusBadgeProps (+7 more)
 
 ### Community 30 - "get_user_role"
-Cohesion: 0.09
-Nodes (13): ComplaintPermission, Complaint Permissions: - Customer: Create complaint, view own complaints via…, FeedbackPermission, get_user_role(), Feedback Permissions: - Admin, Manager, Reception: Full view & management…, Resolve user role reliably., FeedbackCreateSerializer, FeedbackSerializer (+5 more)
+Cohesion: 0.06
+Nodes (21): ComplaintPermission, Complaint Permissions: - Customer: Create complaint, view own complaints via…, FeedbackPermission, get_user_role(), Feedback Permissions: - Admin, Manager, Reception: Full view & management…, Resolve user role reliably., FeedbackCreateSerializer, FeedbackSerializer (+13 more)
 
-### Community 31 - "InquiryViewSet"
-Cohesion: 0.19
-Nodes (8): InquiryCreateSerializer, InquiryReplySerializer, InquirySerializer, Meta, InquiryPagination, InquiryViewSet, action, PageNumberPagination
+### Community 31 - "RoomSerializer"
+Cohesion: 0.13
+Nodes (8): Public or authenticated endpoint to query available rooms and categories using…, RoomAmenity, Meta, RoomAmenitySerializer, RoomSerializer, RoomTypeSerializer, RoomPermission, RoomTypePermission
 
 ### Community 32 - "useBookings.ts"
-Cohesion: 0.18
-Nodes (10): BookingWizard(), AvailabilityParams, BookingFilters, CreateBookingPayload, useAvailability(), useCheckInBooking(), useCheckOutBooking(), useCreateBooking() (+2 more)
+Cohesion: 0.13
+Nodes (11): NotificationContext, NotificationContextType, NotificationProvider(), Toast, ToastType, AvailabilityParams, BookingFilters, CreateBookingPayload (+3 more)
 
 ### Community 33 - "ComplaintViewSet"
-Cohesion: 0.16
-Nodes (8): ComplaintCreateSerializer, ComplaintSerializer, ComplaintStatusUpdateSerializer, Meta, ComplaintPagination, ComplaintViewSet, action, PageNumberPagination
+Cohesion: 0.21
+Nodes (5): ComplaintCreateSerializer, ComplaintSerializer, Meta, ComplaintViewSet, action
 
-### Community 34 - "HousekeepingTaskViewSet"
-Cohesion: 0.11
-Nodes (9): HousekeepingPermission, Permissions for Housekeeping Tasks: - ADMIN, MANAGER: Full access (create,…, HousekeepingTaskSerializer, Meta, HousekeepingTaskViewSet, action, Room Housekeeping Board with operational and cleanliness statuses., CRUD and status workflows for Housekeeping Tasks: - ADMIN, MANAGER: Full… (+1 more)
+### Community 34 - "notify_role"
+Cohesion: 0.06
+Nodes (22): Department, HousekeepingPermission, Permissions for Housekeeping Tasks: - ADMIN, MANAGER: Full access (create,…, HousekeepingTaskSerializer, Meta, HousekeepingTaskViewSet, action, Room Housekeeping Board with operational and cleanliness statuses. (+14 more)
 
 ### Community 35 - ".oxlintrc.json"
 Cohesion: 0.33
@@ -290,7 +289,7 @@ Nodes (5): 🏛️ Application Architecture, 🔑 Authentication & Role Permissi
 
 ### Community 53 - "useRestaurant.ts"
 Cohesion: 0.16
-Nodes (18): RestaurantDashboard(), useMyBookings(), CreateFoodOrderPayload, FoodItem, FoodOrderDetail, FoodOrderStats, OrderItemDetail, RestaurantItem (+10 more)
+Nodes (17): RestaurantDashboard(), CreateFoodOrderPayload, FoodItem, FoodOrderDetail, FoodOrderStats, OrderItemDetail, RestaurantItem, useCancelFoodOrder() (+9 more)
 
 ### Community 54 - "StayHive Frontend — React 19, Vite & Tailwind CSS"
 Cohesion: 0.40
@@ -309,8 +308,8 @@ Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
 ### Community 60 - "Customer"
-Cohesion: 0.10
-Nodes (16): AbstractBaseUser, Customer, Hotel, HousekeepingTask, Interaction, Meta, Service, ServiceRequest (+8 more)
+Cohesion: 0.09
+Nodes (15): AbstractBaseUser, PaymentMethodPermission, Payment methods can be read by authenticated users. Only Admin/Manager can…, Customer, Hotel, Service, ServiceRequest, Staff (+7 more)
 
 ### Community 64 - "FoodOrderSerializer"
 Cohesion: 0.15
@@ -321,16 +320,16 @@ Cohesion: 0.18
 Nodes (6): FoodMenuPermission, FoodOrderPermission, Permissions for Food Menu items: - Safe methods: Accessible by ADMIN, MANAGER,…, Permissions for Food Orders: - ADMIN, MANAGER, RESTAURANT: Full access to view,…, Permissions for Restaurant management: - Safe methods (GET, HEAD, OPTIONS):…, RestaurantPermission
 
 ### Community 66 - "cancellations/views.py"
-Cohesion: 0.05
-Nodes (31): BillingPermission, get_user_role(), PaymentMethodPermission, Role-based billing permission: - Admin, Manager: Full access. - Reception: Can…, Resolve user role reliably., Payment methods can be read by authenticated users. Only Admin/Manager can…, InvoiceSerializer, PaymentCreateSerializer (+23 more)
+Cohesion: 0.06
+Nodes (26): BillingPermission, get_user_role(), Role-based billing permission: - Admin, Manager: Full access. - Reception: Can…, Resolve user role reliably., PaymentCreateSerializer, InvoiceViewSet, PaymentViewSet, action (+18 more)
 
 ### Community 67 - "useHotels.ts"
 Cohesion: 0.22
 Nodes (7): HotelFilters, useCreateHotel(), useDeleteHotel(), useUpdateHotel(), HotelsPage(), Gallery, HotelFacility
 
 ### Community 68 - "useHousekeeping.ts"
-Cohesion: 0.23
-Nodes (10): HousekeepingDashboard(), CreateHousekeepingTaskPayload, HousekeepingFilters, HousekeepingRoomBoardItem, HousekeepingTaskItem, useCreateHousekeepingTask(), useHousekeepingRoomBoard(), useHousekeepingTasks() (+2 more)
+Cohesion: 0.21
+Nodes (11): HousekeepingDashboard(), CreateHousekeepingTaskPayload, HousekeepingFilters, HousekeepingRoomBoardItem, HousekeepingTaskItem, useCreateHousekeepingTask(), useHousekeepingRoomBoard(), useHousekeepingTasks() (+3 more)
 
 ### Community 69 - "useSupport.ts"
 Cohesion: 0.12
@@ -344,9 +343,13 @@ Nodes (12): API_BASE_URL, apiClient, analyticsApi, AnalyticsFilterParams, Custom
 Cohesion: 0.25
 Nodes (4): Permissions for Service Requests: - ADMIN, MANAGER, RECEPTION: Full management…, Permissions for Service Management: - Safe methods (GET, HEAD, OPTIONS): ADMIN,…, ServicePermission, ServiceRequestPermission
 
-### Community 74 - "analytics/views.py"
+### Community 73 - "InvoicesPage.tsx"
 Cohesion: 0.18
-Nodes (25): AnalyticsPermission, get_role_name(), Role-based permissions for Analytics: - CUSTOMER: 403 Forbidden (No access to…, AnalyticsOverviewView, BookingAnalyticsView, ComplaintAnalyticsView, CustomerAnalyticsView, FeedbackAnalyticsView (+17 more)
+Nodes (13): AdminDashboard(), CustomerDashboard(), StatCard(), StatCardProps, useAnalyticsOverview(), useBillingStats(), useInvoice(), useInvoices() (+5 more)
+
+### Community 74 - "analytics/views.py"
+Cohesion: 0.28
+Nodes (17): AnalyticsPermission, get_role_name(), Role-based permissions for Analytics: - CUSTOMER: 403 Forbidden (No access to…, AnalyticsOverviewView, BookingAnalyticsView, ComplaintAnalyticsView, CustomerAnalyticsView, FeedbackAnalyticsView (+9 more)
 
 ### Community 75 - "restaurant/views.py"
 Cohesion: 0.13
@@ -356,45 +359,45 @@ Nodes (15): Food, FoodOrder, OrderItem, Restaurant, CreateFoodOrderSerializer, C
 Cohesion: 0.19
 Nodes (15): Header(), HeaderProps, Theme, ThemeContext, ThemeContextType, ThemeProvider(), useTheme(), notificationApi (+7 more)
 
-### Community 77 - "NotificationContext.tsx"
-Cohesion: 0.33
-Nodes (5): NotificationContext, NotificationContextType, NotificationProvider(), Toast, ToastType
+### Community 77 - "useServices.ts"
+Cohesion: 0.18
+Nodes (12): CreateServiceRequestPayload, ServiceFilters, ServiceItem, ServiceRequestFilters, ServiceRequestItem, useCancelServiceRequest(), useCreateService(), useCreateServiceRequest() (+4 more)
 
 ### Community 78 - "notify_customer"
-Cohesion: 0.11
-Nodes (12): BookingSerializer, action, Transactional booking creation with date overlap verification, room auto-…, Returns the authenticated customer's own booking history., create_notification(), notify_customer(), notify_department(), notify_role() (+4 more)
-
-### Community 84 - "InvoicesPage.tsx"
-Cohesion: 0.52
-Nodes (6): useBillingStats(), useInvoice(), useInvoices(), useMyInvoices(), usePaymentMethods(), InvoicesPage()
-
-### Community 85 - "AdminDashboard.tsx"
-Cohesion: 0.47
-Nodes (4): AdminDashboard(), StatCard(), StatCardProps, useAnalyticsOverview()
+Cohesion: 0.14
+Nodes (7): BookingSerializer, action, Transactional booking creation with date overlap verification, room auto-…, Returns the authenticated customer's own booking history., notify_customer(), notify_department(), Notify staff members belonging to a department (e.g. 'Restaurant',…
 
 ### Community 87 - "migration_cp11.py"
 Cohesion: 0.67
 Nodes (3): get_existing_indexes(), StayHive — Checkpoint 11 Database Migration Applies safe, performant indexes to…, run_migration()
 
+### Community 89 - "reception/urls.py"
+Cohesion: 0.32
+Nodes (4): ActiveStaysView, ArrivalsView, APIView, ReceptionSearchView
+
+### Community 90 - "RoomStatusBoardSerializer"
+Cohesion: 0.33
+Nodes (3): Meta, RoomStatusBoardSerializer, RoomStatusBoardView
+
 ## Knowledge Gaps
 - **263 isolated node(s):** `Meta`, `Meta`, `Meta`, `Meta`, `Meta` (+258 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 551 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 559 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **24 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `api_response()` connect `api_response` to `accounts/views.py`, `bookings/views.py`, `CustomerViewSet`, `test_checkpoint8.py`, `api_error`, `reports/views.py`, `ReceptionDepartureSerializer`, `Booking`, `hotels/views.py`, `staff/views.py`, `ServiceRequestViewSet`, `RoomSerializer`, `NotificationViewSet`, `get_user_role`, `InquiryViewSet`, `ComplaintViewSet`, `HousekeepingTaskViewSet`, `Customer`, `FoodOrderSerializer`, `cancellations/views.py`, `analytics/views.py`, `restaurant/views.py`, `notify_customer`?**
+- **Why does `api_response()` connect `api_response` to `accounts/views.py`, `Room`, `CustomerViewSet`, `test_checkpoint8.py`, `OfferPackageViewSet`, `reports/services.py`, `ReceptionDepartureSerializer`, `reception/views.py`, `hotels/views.py`, `Booking`, `ServiceRequestViewSet`, `api_error`, `NotificationViewSet`, `get_user_role`, `RoomSerializer`, `ComplaintViewSet`, `notify_role`, `Customer`, `FoodOrderSerializer`, `cancellations/views.py`, `analytics/views.py`, `restaurant/views.py`, `notify_customer`, `ReceptionArrivalSerializer`, `reception/urls.py`, `RoomStatusBoardSerializer`, `ReceptionCancellationSerializer`, `.get_queryset`?**
   _High betweenness centrality (0.111) - this node is a cross-community bridge._
-- **Why does `Customer` connect `Customer` to `ComplaintViewSet`, `accounts/views.py`, `bookings/views.py`, `cancellations/views.py`, `CustomerViewSet`, `test_checkpoint8.py`, `analytics/views.py`, `reports/views.py`, `restaurant/views.py`, `notify_customer`, `Booking`, `ServiceRequestViewSet`, `get_user_role`, `InquiryViewSet`?**
-  _High betweenness centrality (0.046) - this node is a cross-community bridge._
-- **Why does `api_error()` connect `api_error` to `accounts/views.py`, `bookings/views.py`, `CustomerViewSet`, `test_checkpoint8.py`, `reports/views.py`, `api_response`, `Booking`, `hotels/views.py`, `ServiceRequestViewSet`, `RoomSerializer`, `NotificationViewSet`, `get_user_role`, `InquiryViewSet`, `ComplaintViewSet`, `HousekeepingTaskViewSet`, `Customer`, `FoodOrderSerializer`, `cancellations/views.py`, `analytics/views.py`, `restaurant/views.py`, `notify_customer`?**
-  _High betweenness centrality (0.045) - this node is a cross-community bridge._
+- **Why does `Customer` connect `Customer` to `ComplaintViewSet`, `accounts/views.py`, `Room`, `cancellations/views.py`, `notify_role`, `CustomerViewSet`, `test_checkpoint8.py`, `analytics/views.py`, `reports/services.py`, `restaurant/views.py`, `reception/views.py`, `Booking`, `ServiceRequestViewSet`, `test_checkpoint12.py`, `get_user_role`?**
+  _High betweenness centrality (0.039) - this node is a cross-community bridge._
+- **Why does `api_error()` connect `api_error` to `accounts/views.py`, `Room`, `CustomerViewSet`, `test_checkpoint8.py`, `OfferPackageViewSet`, `reports/services.py`, `api_response`, `reception/views.py`, `hotels/views.py`, `Booking`, `ServiceRequestViewSet`, `NotificationViewSet`, `get_user_role`, `RoomSerializer`, `ComplaintViewSet`, `notify_role`, `Customer`, `FoodOrderSerializer`, `cancellations/views.py`, `analytics/views.py`, `restaurant/views.py`, `notify_customer`?**
+  _High betweenness centrality (0.039) - this node is a cross-community bridge._
 - **Are the 25 inferred relationships involving `Customer` (e.g. with `RegisterView` and `AnalyticsOverviewView`) actually correct?**
   _`Customer` has 25 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 28 inferred relationships involving `Booking` (e.g. with `AnalyticsOverviewView` and `BookingAnalyticsView`) actually correct?**
   _`Booking` has 28 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Meta`, `Meta`, `Meta` to the rest of the system?**
   _263 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `useAuth` be split into smaller, more focused modules?**
-  _Cohesion score 0.12298387096774194 - nodes in this community are weakly interconnected._
+- **Should `react` be split into smaller, more focused modules?**
+  _Cohesion score 0.14532019704433496 - nodes in this community are weakly interconnected._

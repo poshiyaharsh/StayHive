@@ -14,10 +14,25 @@ class OfferPackageSerializer(serializers.ModelSerializer):
         fields = ['id', 'hotel_id', 'hotel_name', 'code', 'title', 'description', 'discount_percentage', 'min_booking_amount', 'valid_from', 'valid_to', 'is_active', 'usage_count']
 
 
+class OfferPermission(permissions.BasePermission):
+    """
+    Offers Permissions:
+    - Public / Customer / Staff: Can view active offers and validate coupon codes.
+    - Admin, Manager: Can create, update, or delete offer packages.
+    """
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS or view.action == 'validate_code':
+            return True
+        if not request.user or not request.user.is_authenticated:
+            return False
+        role = getattr(request.user.role, 'name', '') if getattr(request.user, 'role', None) else ''
+        return role in ['ADMIN', 'MANAGER']
+
+
 class OfferPackageViewSet(viewsets.ModelViewSet):
     queryset = OfferPackage.objects.all().order_by('-discount_percentage')
     serializer_class = OfferPackageSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [OfferPermission]
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
