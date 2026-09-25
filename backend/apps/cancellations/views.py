@@ -19,6 +19,9 @@ from apps.cancellations.serializers import (
     CancellationRequestSerializer, CancellationRequestCreateSerializer,
     RefundSerializer, RefundCreateSerializer
 )
+from apps.notifications.services import notify_role, notify_customer
+from apps.notifications.constants import TYPE_REFUND_COMPLETED, TYPE_BOOKING_CANCELLED
+
 
 
 class CancellationRequestViewSet(viewsets.ModelViewSet):
@@ -102,6 +105,11 @@ class CancellationRequestViewSet(viewsets.ModelViewSet):
             refund_amount=total_paid,
             status='Pending'
         )
+
+        # Notify staff of cancellation request
+        notify_role("RECEPTION", f"Cancellation requested for booking #{booking.booking_number or booking.id}.", notification_type=TYPE_BOOKING_CANCELLED, title="Cancellation Requested")
+        notify_role("ADMIN", f"Cancellation requested for booking #{booking.booking_number or booking.id}.", notification_type=TYPE_BOOKING_CANCELLED, title="Cancellation Requested")
+        notify_role("MANAGER", f"Cancellation requested for booking #{booking.booking_number or booking.id}.", notification_type=TYPE_BOOKING_CANCELLED, title="Cancellation Requested")
 
         return api_response(
             success=True,
@@ -214,6 +222,14 @@ class CancellationRequestViewSet(viewsets.ModelViewSet):
                         else:
                             invoice.status = 'Partially Refunded'
                         invoice.save(update_fields=['status'])
+
+        if created_refund and booking.customer:
+            notify_customer(
+                booking.customer,
+                f"Refund of ₹{created_refund.amount} for booking #{booking.booking_number or booking.id} has been completed.",
+                notification_type=TYPE_REFUND_COMPLETED,
+                title="Refund Completed"
+            )
 
         return api_response(
             success=True,
@@ -353,6 +369,14 @@ class RefundViewSet(viewsets.ModelViewSet):
             else:
                 invoice.status = 'Partially Refunded'
             invoice.save(update_fields=['status'])
+
+        if cancel_req.booking and cancel_req.booking.customer:
+            notify_customer(
+                cancel_req.booking.customer,
+                f"Refund of ₹{refund.amount} for booking #{cancel_req.booking.booking_number or cancel_req.booking.id} has been completed.",
+                notification_type=TYPE_REFUND_COMPLETED,
+                title="Refund Completed"
+            )
 
         return api_response(
             success=True,

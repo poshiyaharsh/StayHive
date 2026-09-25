@@ -23,6 +23,9 @@ from apps.billing.serializers import (
 from apps.billing.permissions import (
     BillingPermission, PaymentMethodPermission, get_user_role
 )
+from apps.notifications.services import notify_customer
+from apps.notifications.constants import TYPE_PAYMENT_RECEIVED
+
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):
@@ -288,6 +291,15 @@ def _process_payment(request, validated_data):
         else:
             invoice.status = 'Partially Paid'
         invoice.save(update_fields=['status'])
+
+    # Notify customer of successful payment
+    if invoice.booking and invoice.booking.customer:
+        notify_customer(
+            invoice.booking.customer,
+            f"Payment of ₹{amount} for invoice #{invoice.invoice_number or invoice.id} was successful.",
+            notification_type=TYPE_PAYMENT_RECEIVED,
+            title="Payment Received"
+        )
 
     return api_response(
         success=True,

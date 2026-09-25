@@ -10,6 +10,9 @@ from apps.core.models import HousekeepingTask, Room, Staff, Department
 from apps.core.utils import api_response, api_error
 from apps.housekeeping.serializers import HousekeepingTaskSerializer
 from apps.housekeeping.permissions import HousekeepingPermission
+from apps.notifications.services import notify_user, notify_role
+from apps.notifications.constants import TYPE_HOUSEKEEPING_TASK
+
 
 
 HK_STATUS_NORM = {
@@ -185,6 +188,15 @@ class HousekeepingTaskViewSet(viewsets.ModelViewSet):
                 notes=remarks
             )
 
+        # Notify assigned staff member
+        if task.staff and task.staff.user:
+            notify_user(
+                task.staff.user,
+                f"Room {room.room_number} has been assigned to you for housekeeping.",
+                notification_type=TYPE_HOUSEKEEPING_TASK,
+                title="Housekeeping Assignment"
+            )
+
         serializer = self.get_serializer(task)
         return api_response(
             success=True,
@@ -213,18 +225,31 @@ class HousekeepingTaskViewSet(viewsets.ModelViewSet):
         # Handle staff reassignment by Admin/Manager
         staff_id = request.data.get('staff_id')
         if staff_id and role in ['ADMIN', 'MANAGER']:
-            new_staff = Staff.objects.filter(id=staff_id).select_related('department').first()
+            new_staff = Staff.objects.filter(id=staff_id).select_related('department', 'user').first()
             if not new_staff or new_staff.status != 'Active':
                 return api_error("Only active staff can be assigned.", status_code=status.HTTP_400_BAD_REQUEST)
             if not new_staff.department or 'housekeeping' not in new_staff.department.name.lower():
                 return api_error("Only housekeeping staff can be assigned to housekeeping tasks.", status_code=status.HTTP_400_BAD_REQUEST)
             instance.staff = new_staff
+            if new_staff.user:
+                notify_user(
+                    new_staff.user,
+                    f"Room {instance.room.room_number} has been assigned to you for housekeeping.",
+                    notification_type=TYPE_HOUSEKEEPING_TASK,
+                    title="Housekeeping Assignment"
+                )
 
         remarks = request.data.get('remarks') or request.data.get('notes')
         if remarks is not None:
             instance.notes = remarks
 
         instance.save()
+
+        # If completed, notify reception and management
+        if instance.status == 'Completed':
+            notify_role("RECEPTION", f"Room {instance.room.room_number} housekeeping task has been completed.", notification_type=TYPE_HOUSEKEEPING_TASK, title="Housekeeping Completed")
+            notify_role("MANAGER", f"Room {instance.room.room_number} housekeeping task has been completed.", notification_type=TYPE_HOUSEKEEPING_TASK, title="Housekeeping Completed")
+
         serializer = self.get_serializer(instance)
         return api_response(
             success=True,
@@ -257,6 +282,12 @@ class HousekeepingTaskViewSet(viewsets.ModelViewSet):
             return err
 
         instance.save()
+
+        # If completed, notify reception and management
+        if instance.status == 'Completed':
+            notify_role("RECEPTION", f"Room {instance.room.room_number} housekeeping task has been completed.", notification_type=TYPE_HOUSEKEEPING_TASK, title="Housekeeping Completed")
+            notify_role("MANAGER", f"Room {instance.room.room_number} housekeeping task has been completed.", notification_type=TYPE_HOUSEKEEPING_TASK, title="Housekeeping Completed")
+
         return api_response(
             success=True,
             message=f"Housekeeping task for Room {instance.room.room_number} updated to {instance.status}.",

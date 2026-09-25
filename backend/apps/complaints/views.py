@@ -150,6 +150,13 @@ class ComplaintViewSet(viewsets.ModelViewSet):
             created_at=timezone.now()
         )
 
+        from apps.notifications.services import notify_role, notify_customer
+        from apps.notifications.constants import TYPE_COMPLAINT_CREATED
+        notify_role('MANAGER', f"New guest complaint #{complaint.id} ({complaint.subject}) logged.", TYPE_COMPLAINT_CREATED, title="New Complaint")
+        notify_role('RECEPTION', f"New guest complaint #{complaint.id} ({complaint.subject}) logged.", TYPE_COMPLAINT_CREATED, title="New Complaint")
+        notify_role('ADMIN', f"New guest complaint #{complaint.id} ({complaint.subject}) logged.", TYPE_COMPLAINT_CREATED, title="New Complaint")
+        notify_customer(customer, f"Your complaint #{complaint.id} has been registered.", TYPE_COMPLAINT_CREATED, title="Complaint Registered")
+
         return api_response(
             success=True,
             message="Complaint registered successfully.",
@@ -244,6 +251,10 @@ class ComplaintViewSet(viewsets.ModelViewSet):
         if staff:
             complaint.assigned_to = staff
         complaint.save()
+
+        from apps.notifications.services import notify_customer
+        from apps.notifications.constants import TYPE_COMPLAINT_RESOLVED
+        notify_customer(complaint.customer, f"Your complaint #{complaint.id} ({complaint.subject}) has been resolved.", TYPE_COMPLAINT_RESOLVED)
 
         return api_response(
             success=True,

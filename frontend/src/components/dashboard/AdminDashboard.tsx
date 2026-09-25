@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Hotel, BedDouble, Calendar, DollarSign, Users, Sparkles, CheckCircle2,
-  Clock, ArrowUpRight, ArrowRight, ShieldCheck, TrendingUp
+  Clock, ArrowUpRight, ArrowRight, ShieldCheck, TrendingUp, BarChart3, RefreshCw
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -14,9 +14,12 @@ import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { useDatabase } from '../../context/DatabaseContext';
+import { useAnalyticsOverview, AnalyticsFilterParams } from '../../hooks/useAnalytics';
 
 export const AdminDashboard: React.FC = () => {
   const { analytics, bookings, hotels, rooms, loading } = useDatabase();
+  const [period, setPeriod] = useState<AnalyticsFilterParams['period']>('this_month');
+  const { data: liveOverview, isLoading: analyticsLoading, refetch } = useAnalyticsOverview({ period });
   const navigate = useNavigate();
 
   const revTrends = analytics?.revenue_trends || [
@@ -44,16 +47,18 @@ export const AdminDashboard: React.FC = () => {
   ];
 
   const liveHotelsCount = hotels.length || analytics?.total_hotels || 4;
-  const liveTotalRooms = rooms.length || analytics?.total_rooms || 12;
-  const liveAvailableRooms = rooms.length > 0
+  const liveTotalRooms = liveOverview?.rooms?.total ?? rooms.length ?? analytics?.total_rooms ?? 12;
+  const liveAvailableRooms = liveOverview?.rooms?.available ?? (rooms.length > 0
     ? rooms.filter(r => r.status === 'Available').length
-    : (analytics?.available_rooms ?? 7);
-  const liveOccupiedRooms = rooms.length > 0
+    : (analytics?.available_rooms ?? 7));
+  const liveOccupiedRooms = liveOverview?.rooms?.occupied ?? (rooms.length > 0
     ? rooms.filter(r => r.status === 'Occupied').length
-    : (analytics?.occupied_rooms ?? 3);
-  const liveOccupancyRate = liveTotalRooms > 0
+    : (analytics?.occupied_rooms ?? 3));
+  const liveOccupancyRate = liveOverview?.rooms?.occupancy_rate ?? (liveTotalRooms > 0
     ? Math.round((liveOccupiedRooms / liveTotalRooms) * 100)
-    : (analytics?.occupancy_rate || 25);
+    : (analytics?.occupancy_rate || 25));
+  const liveRevenue = liveOverview?.revenue?.net_revenue ?? liveOverview?.revenue?.total ?? analytics?.total_revenue ?? 482500;
+  const liveActiveBookings = liveOverview?.bookings?.total ?? analytics?.active_bookings ?? bookings.length ?? 5;
 
   return (
     <div className="space-y-8">
@@ -67,13 +72,30 @@ export const AdminDashboard: React.FC = () => {
             Good Morning, Aditya
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Here's what's happening across StayHive luxury properties today.
+            Authoritative management analytics, occupancy metrics & live business operations.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={() => navigate('/bookings')}>
-            View All Bookings
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Period selector */}
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200/80 dark:border-white/10">
+            {(['today', 'this_week', 'this_month', 'all'] as const).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold capitalize transition-all ${
+                  period === p
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                {p.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
+
+          <Button variant="outline" size="sm" onClick={() => navigate('/reports')}>
+            <BarChart3 className="w-3.5 h-3.5 mr-1" /> Reports & Audits
           </Button>
           <Button variant="primary" size="sm" onClick={() => navigate('/rooms')}>
             Manage Rooms
@@ -108,11 +130,11 @@ export const AdminDashboard: React.FC = () => {
           iconColor="bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
         />
         <StatCard
-          title="Total Revenue"
-          value={`₹${(analytics?.total_revenue || 482500).toLocaleString('en-IN')}`}
+          title="Total Net Revenue"
+          value={`₹${Number(liveRevenue).toLocaleString('en-IN')}`}
           change="+14.2%"
           isPositive={true}
-          timeframe="vs last month"
+          timeframe={period ? period.replace('_', ' ') : 'vs last month'}
           icon={DollarSign}
           iconColor="bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
         />
@@ -134,7 +156,7 @@ export const AdminDashboard: React.FC = () => {
         />
         <StatCard
           title="Active Bookings"
-          value={analytics?.active_bookings || bookings.length || 5}
+          value={liveActiveBookings}
           change="+8 This Week"
           isPositive={true}
           icon={Calendar}

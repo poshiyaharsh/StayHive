@@ -33,6 +33,7 @@ import { FeedbackPage } from './pages/FeedbackPage';
 import { ComplaintsPage } from './pages/ComplaintsPage';
 import { InquiriesPage } from './pages/InquiriesPage';
 import { NotificationsPage } from './pages/NotificationsPage';
+import { ReportsPage } from './pages/ReportsPage';
 import { MyBookingsPage } from './pages/MyBookingsPage';
 import { ProfilePage } from './pages/ProfilePage';
 
@@ -85,6 +86,7 @@ export function App() {
                   <Route path="/complaints" element={<ComplaintsPage />} />
                   <Route path="/inquiries" element={<InquiriesPage />} />
                   <Route path="/notifications" element={<NotificationsPage />} />
+                  <Route path="/reports" element={<ReportsPage />} />
                   <Route path="/my-bookings" element={<MyBookingsPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
                 </Route>

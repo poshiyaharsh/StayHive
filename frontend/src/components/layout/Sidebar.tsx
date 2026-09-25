@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Hotel, BedDouble, Layers, Calendar, Users, Briefcase,
   Utensils, Coffee, Sparkles, CheckSquare, Tag, FileText, CreditCard,
   MessageSquare, AlertOctagon, HelpCircle, ChevronLeft, ChevronRight,
-  Search, ShieldAlert
+  Search, ShieldAlert, Bell, BarChart3
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types/database';
@@ -53,6 +53,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Guest Feedback', icon: MessageSquare, path: '/feedback', roles: ['ADMIN', 'MANAGER'] },
     { label: 'Complaints Resolution', icon: AlertOctagon, path: '/complaints', roles: ['ADMIN', 'MANAGER'], badge: 'SLA' },
     { label: 'Inquiries Helpdesk', icon: HelpCircle, path: '/inquiries', roles: ['ADMIN', 'MANAGER'] },
+    { label: 'Reports & Audits', icon: BarChart3, path: '/reports', roles: ['ADMIN', 'MANAGER'] },
+    { label: 'Notifications', icon: Bell, path: '/notifications', roles: ['ADMIN', 'MANAGER', 'RECEPTION', 'HOUSEKEEPING', 'RESTAURANT', 'CUSTOMER'] },
   ];
 
   // Filter items matching role

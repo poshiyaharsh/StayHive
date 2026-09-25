@@ -108,6 +108,10 @@ class InquiryViewSet(viewsets.ModelViewSet):
             created_at=timezone.now()
         )
 
+        from apps.notifications.services import notify_role
+        from apps.notifications.constants import TYPE_INQUIRY_RECEIVED
+        notify_role('RECEPTION', f"New customer inquiry from {inquiry.customer_name}: '{inquiry.subject}'.", TYPE_INQUIRY_RECEIVED)
+
         return api_response(
             success=True,
             message="Your inquiry has been submitted successfully.",
@@ -152,6 +156,11 @@ class InquiryViewSet(viewsets.ModelViewSet):
             inquiry.assigned_to = staff
         inquiry.responded_at = timezone.now()
         inquiry.save()
+
+        if inquiry.customer:
+            from apps.notifications.services import notify_customer
+            from apps.notifications.constants import TYPE_INQUIRY_RESPONDED
+            notify_customer(inquiry.customer, f"Your inquiry '{inquiry.subject}' has received an official response.", TYPE_INQUIRY_RESPONDED)
 
         return api_response(
             success=True,

@@ -136,6 +136,10 @@ class FeedbackViewSet(viewsets.ModelViewSet):
             created_at=timezone.now()
         )
 
+        from apps.notifications.services import notify_role
+        from apps.notifications.constants import TYPE_FEEDBACK_RECEIVED
+        notify_role('MANAGER', f"New guest feedback ({rating}★) received for booking #{booking.booking_number}.", TYPE_FEEDBACK_RECEIVED)
+
         return api_response(
             success=True,
             message="Feedback submitted successfully.",
@@ -196,6 +200,10 @@ class FeedbackViewSet(viewsets.ModelViewSet):
 
         feedback.staff_response = str(reply_text).strip()
         feedback.save(update_fields=['staff_response'])
+
+        from apps.notifications.services import notify_customer
+        from apps.notifications.constants import TYPE_FEEDBACK_RECEIVED
+        notify_customer(feedback.customer, f"Management responded to your feedback for booking #{feedback.booking.booking_number}.", TYPE_FEEDBACK_RECEIVED)
 
         return api_response(
             success=True,

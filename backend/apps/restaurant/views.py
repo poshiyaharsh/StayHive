@@ -15,6 +15,9 @@ from apps.restaurant.serializers import (
     FoodOrderSerializer, CreateFoodOrderSerializer, UpdateOrderStatusSerializer
 )
 from apps.restaurant.permissions import RestaurantPermission, FoodMenuPermission, FoodOrderPermission
+from apps.notifications.services import notify_role, notify_customer
+from apps.notifications.constants import TYPE_FOOD_ORDER_CREATED, TYPE_FOOD_ORDER_STATUS
+
 
 
 class RestaurantViewSet(viewsets.ModelViewSet):
@@ -364,6 +367,11 @@ class FoodOrderViewSet(viewsets.ModelViewSet):
             'booking', 'customer', 'customer__user', 'room'
         ).prefetch_related('items', 'items__food', 'items__food__restaurant').first()
 
+        # Notify restaurant staff and management
+        notify_role('RESTAURANT', f"New food order #{order.id} has been placed.", notification_type=TYPE_FOOD_ORDER_CREATED, title="New Food Order")
+        notify_role('ADMIN', f"New food order #{order.id} has been placed.", notification_type=TYPE_FOOD_ORDER_CREATED, title="New Food Order")
+        notify_role('MANAGER', f"New food order #{order.id} has been placed.", notification_type=TYPE_FOOD_ORDER_CREATED, title="New Food Order")
+
         return api_response(
             success=True,
             message="Food order placed successfully!",
@@ -414,6 +422,17 @@ class FoodOrderViewSet(viewsets.ModelViewSet):
         order.status = normalized_new
         order.save()
 
+        # Notify customer of status change
+        status_msgs = {
+            'Accepted': f"Food order #{order.id} has been confirmed.",
+            'Preparing': f"Food order #{order.id} is being prepared.",
+            'Ready': f"Food order #{order.id} is ready.",
+            'Delivered': f"Food order #{order.id} has been delivered.",
+        }
+        msg = status_msgs.get(normalized_new, f"Food order #{order.id} is now {normalized_new.lower()}.")
+        if order.customer:
+            notify_customer(order.customer, msg, notification_type=TYPE_FOOD_ORDER_STATUS, title="Food Order Update")
+
         reloaded = FoodOrder.objects.filter(id=order.id).select_related(
             'booking', 'customer', 'customer__user', 'room'
         ).prefetch_related('items', 'items__food', 'items__food__restaurant').first()
@@ -441,6 +460,9 @@ class FoodOrderViewSet(viewsets.ModelViewSet):
 
         order.status = 'Cancelled'
         order.save()
+
+        if order.customer:
+            notify_customer(order.customer, f"Food order #{order.id} has been cancelled.", notification_type=TYPE_FOOD_ORDER_STATUS, title="Food Order Cancelled")
 
         return api_response(
             success=True,

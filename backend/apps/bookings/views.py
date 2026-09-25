@@ -229,11 +229,30 @@ class BookingViewSet(viewsets.ModelViewSet):
                     discount_applied=discount_amount
                 )
 
+        from apps.notifications.services import notify_customer, notify_role
+        from apps.notifications.constants import TYPE_BOOKING_CREATED, TYPE_BOOKING_CONFIRMED
+        notify_customer(booking.customer, f"Your booking #{booking.booking_number} has been confirmed.", TYPE_BOOKING_CONFIRMED)
+        notify_role('RECEPTION', f"New booking #{booking.booking_number} confirmed for {booking.customer.user.get_full_name()}.", TYPE_BOOKING_CREATED)
+
         return api_response(
             success=True,
             message="Booking confirmed successfully!",
             data=BookingSerializer(booking).data,
             status_code=status.HTTP_201_CREATED
+        )
+
+    @action(detail=True, methods=['post', 'patch'], url_path='confirm')
+    def confirm(self, request, pk=None):
+        booking = self.get_object()
+        booking.status = 'Confirmed'
+        booking.save(update_fields=['status'])
+        from apps.notifications.services import notify_customer
+        from apps.notifications.constants import TYPE_BOOKING_CONFIRMED
+        notify_customer(booking.customer, f"Your booking #{booking.booking_number} has been confirmed.", TYPE_BOOKING_CONFIRMED, title="Booking Confirmed")
+        return api_response(
+            success=True,
+            message="Booking confirmed successfully!",
+            data=BookingSerializer(booking).data
         )
 
     @action(detail=False, methods=['get'])
@@ -370,6 +389,11 @@ class BookingViewSet(viewsets.ModelViewSet):
             status='Pending'
         )
 
+        from apps.notifications.services import notify_customer, notify_role
+        from apps.notifications.constants import TYPE_BOOKING_CANCELLED
+        notify_customer(booking.customer, f"Your booking #{booking.booking_number} has been cancelled.", TYPE_BOOKING_CANCELLED)
+        notify_role('RECEPTION', f"Booking #{booking.booking_number} cancelled by guest.", TYPE_BOOKING_CANCELLED)
+
         return api_response(
             success=True,
             message="Booking cancelled and refund request initiated successfully.",
@@ -411,6 +435,10 @@ class BookingViewSet(viewsets.ModelViewSet):
         room.status = 'Occupied'
         room.save()
 
+        from apps.notifications.services import notify_customer
+        from apps.notifications.constants import TYPE_CHECK_IN
+        notify_customer(booking.customer, f"Check-in completed for booking #{booking.booking_number}. Room {room.room_number} assigned.", TYPE_CHECK_IN)
+
         return api_response(
             success=True,
             message=f"Guest checked into Room {room.room_number}. Keycard: {key_card}",
@@ -451,6 +479,11 @@ class BookingViewSet(viewsets.ModelViewSet):
             elif customer.total_spend > Decimal('40000'):
                 customer.loyalty_tier = 'Gold'
             customer.save()
+
+        from apps.notifications.services import notify_customer, notify_department
+        from apps.notifications.constants import TYPE_CHECK_OUT, TYPE_HOUSEKEEPING_TASK
+        notify_customer(booking.customer, f"Checkout completed for booking #{booking.booking_number}. Thank you for staying with us!", TYPE_CHECK_OUT)
+        notify_department('Housekeeping', f"Room {room.room_number if booking_room else 'suite'} vacated. Turnover cleaning required.", TYPE_HOUSEKEEPING_TASK)
 
         return api_response(
             success=True,

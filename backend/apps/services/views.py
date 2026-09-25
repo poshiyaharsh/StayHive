@@ -10,6 +10,9 @@ from apps.core.models import Service, ServiceRequest, Booking, Customer, Staff, 
 from apps.core.utils import api_response, api_error
 from apps.services.serializers import ServiceSerializer, ServiceRequestSerializer
 from apps.services.permissions import ServicePermission, ServiceRequestPermission
+from apps.notifications.services import notify_role, notify_customer
+from apps.notifications.constants import TYPE_SERVICE_REQUEST_CREATED, TYPE_SERVICE_REQUEST_STATUS
+
 
 
 STATUS_TRANSITION_MAP = {
@@ -231,6 +234,12 @@ class ServiceRequestViewSet(viewsets.ModelViewSet):
             )
 
         serializer = self.get_serializer(sr)
+
+        # Notify staff of new service request
+        notify_role("RECEPTION", f"New service request #{sr.id} requires attention.", notification_type=TYPE_SERVICE_REQUEST_CREATED, title="New Service Request")
+        notify_role("ADMIN", f"New service request #{sr.id} requires attention.", notification_type=TYPE_SERVICE_REQUEST_CREATED, title="New Service Request")
+        notify_role("MANAGER", f"New service request #{sr.id} requires attention.", notification_type=TYPE_SERVICE_REQUEST_CREATED, title="New Service Request")
+
         return api_response(
             success=True,
             message=f"{service.name} requested successfully!",
@@ -260,6 +269,17 @@ class ServiceRequestViewSet(viewsets.ModelViewSet):
             instance.staff_id = staff_id
 
         instance.save()
+
+        if new_status_raw and instance.booking and instance.booking.customer:
+            status_msgs = {
+                'Accepted': f"Your service request #{instance.id} has been accepted.",
+                'In Progress': f"Your service request #{instance.id} is in progress.",
+                'Completed': f"Your {instance.service.name} service request #{instance.id} has been completed.",
+                'Cancelled': f"Your service request #{instance.id} has been cancelled.",
+            }
+            msg = status_msgs.get(instance.status, f"Your service request #{instance.id} status is now {instance.status}.")
+            notify_customer(instance.booking.customer, msg, notification_type=TYPE_SERVICE_REQUEST_STATUS, title="Service Request Update")
+
         serializer = self.get_serializer(instance)
         return api_response(
             success=True,
@@ -285,6 +305,17 @@ class ServiceRequestViewSet(viewsets.ModelViewSet):
             instance.staff_id = staff_id
 
         instance.save()
+
+        if instance.booking and instance.booking.customer:
+            status_msgs = {
+                'Accepted': f"Your service request #{instance.id} has been accepted.",
+                'In Progress': f"Your service request #{instance.id} is in progress.",
+                'Completed': f"Your {instance.service.name} service request #{instance.id} has been completed.",
+                'Cancelled': f"Your service request #{instance.id} has been cancelled.",
+            }
+            msg = status_msgs.get(instance.status, f"Your service request #{instance.id} status is now {instance.status}.")
+            notify_customer(instance.booking.customer, msg, notification_type=TYPE_SERVICE_REQUEST_STATUS, title="Service Request Update")
+
         return api_response(
             success=True,
             message=f"Service request status updated to {instance.status}.",
@@ -313,6 +344,10 @@ class ServiceRequestViewSet(viewsets.ModelViewSet):
             return err
 
         instance.save()
+
+        if instance.booking and instance.booking.customer:
+            notify_customer(instance.booking.customer, f"Your service request #{instance.id} has been cancelled.", notification_type=TYPE_SERVICE_REQUEST_STATUS, title="Service Request Cancelled")
+
         return api_response(
             success=True,
             message="Service request cancelled successfully.",

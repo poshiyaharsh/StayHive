@@ -188,6 +188,10 @@ class CheckInView(APIView):
             room.status = 'Occupied'
             room.save()
 
+        from apps.notifications.services import notify_customer
+        from apps.notifications.constants import TYPE_CHECK_IN
+        notify_customer(booking.customer, f"Check-in completed for booking #{booking.booking_number}. Room {room.room_number} assigned.", TYPE_CHECK_IN)
+
         return api_response(
             success=True,
             message="Guest checked in successfully.",
@@ -290,7 +294,7 @@ class CheckOutView(APIView):
                     status_code=status.HTTP_400_BAD_REQUEST
                 )
 
-        return api_response(
+        resp = api_response(
             success=True,
             message="Guest checked out successfully.",
             data={
@@ -316,6 +320,13 @@ class CheckOutView(APIView):
             },
             status_code=status.HTTP_200_OK
         )
+
+        from apps.notifications.services import notify_customer, notify_department
+        from apps.notifications.constants import TYPE_CHECK_OUT, TYPE_HOUSEKEEPING_TASK
+        notify_customer(booking.customer, f"Checkout completed for booking #{booking.booking_number}. Thank you for staying with us!", TYPE_CHECK_OUT)
+        notify_department('Housekeeping', f"Room {room.room_number} vacated. Turnover cleaning required.", TYPE_HOUSEKEEPING_TASK)
+
+        return resp
 
 
 class ReceptionSearchView(APIView):

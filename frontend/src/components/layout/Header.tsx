@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { useDatabase } from '../../context/DatabaseContext';
+import { useNotifications, useUnreadNotificationsCount, useMarkNotificationRead } from '../../hooks/useNotifications';
 import { UserRole } from '../../types/database';
 
 interface HeaderProps {
@@ -18,7 +18,9 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onOpenCommand, onToggleSidebar }) => {
   const { user, role, switchRole, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const { notifications } = useDatabase();
+  const { data: notifData } = useNotifications();
+  const { data: liveUnreadCount } = useUnreadNotificationsCount();
+  const markReadMutation = useMarkNotificationRead();
   const navigate = useNavigate();
 
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
@@ -34,7 +36,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCommand, onToggleSidebar }
     { role: 'CUSTOMER', label: 'Guest / Customer', desc: 'Bookings, In-Room Dining & Services', color: 'bg-indigo-600' },
   ];
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const notifications = notifData?.notifications || [];
+  const unreadCount = liveUnreadCount ?? notifData?.unread_count ?? 0;
 
   return (
     <header className="sticky top-0 z-30 w-full h-[68px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/90 dark:border-white/10 px-4 lg:px-8 flex items-center justify-between gap-4">
@@ -161,16 +164,52 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCommand, onToggleSidebar }
                 >
                   <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
                     <div className="font-bold text-slate-900 dark:text-white text-sm">Notifications</div>
-                    <span className="text-xs text-blue-600 font-medium">{unreadCount} new</span>
+                    <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold">{unreadCount} unread</span>
                   </div>
                   <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-white/5 mt-2">
-                    {notifications.slice(0, 5).map((n) => (
-                      <div key={n.id} className="py-2.5 px-1 hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
-                        <div className="text-xs font-semibold text-slate-900 dark:text-white">{n.title}</div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{n.message}</div>
-                        <div className="text-[10px] text-slate-400 mt-1">Just now</div>
+                    {notifications.length === 0 ? (
+                      <div className="py-6 text-center text-xs text-slate-400">
+                        No notifications yet.
                       </div>
-                    ))}
+                    ) : (
+                      notifications.slice(0, 5).map((n) => (
+                        <div
+                          key={n.id}
+                          onClick={() => {
+                            if (!n.is_read) {
+                              markReadMutation.mutate(n.id);
+                            }
+                          }}
+                          className={`py-2.5 px-2 rounded-xl transition-colors cursor-pointer ${
+                            !n.is_read
+                              ? 'bg-blue-50/50 dark:bg-blue-950/30 hover:bg-blue-50 dark:hover:bg-blue-950/50'
+                              : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className={`text-xs font-semibold ${!n.is_read ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-white'}`}>
+                              {n.title}
+                            </span>
+                            {!n.is_read && <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />}
+                          </div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{n.message}</div>
+                          <div className="text-[10px] text-slate-400 mt-1">
+                            {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <div className="pt-2 mt-2 border-t border-slate-100 dark:border-white/5">
+                    <button
+                      onClick={() => {
+                        setIsNotifOpen(false);
+                        navigate('/notifications');
+                      }}
+                      className="w-full py-1.5 text-center text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      View All Notifications
+                    </button>
                   </div>
                 </motion.div>
               </>
